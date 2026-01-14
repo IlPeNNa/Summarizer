@@ -1,0 +1,66 @@
+﻿# Root .gitignore for multi-project repository
+
+# ===========================
+# Angular Frontend (IngSW2025-FE)
+# ===========================
+
+# Node dependencies
+IngSW2025-FE/node_modules/
+
+# Angular cache and build outputs  
+IngSW2025-FE/.angular/
+IngSW2025-FE/dist/
+IngSW2025-FE/tmp/
+IngSW2025-FE/out-tsc/
+IngSW2025-FE/bazel-out/
+
+# ===========================
+# Java/Gradle Backend (IngSW2025-BE)
+# ===========================
+
+# Gradle
+IngSW2025-BE/.gradle/
+IngSW2025-BE/build/
+IngSW2025-BE/gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+IngSW2025-BE/.idea/
+IngSW2025-BE/*.iml
+IngSW2025-BE/*.iws
+
+# Eclipse
+IngSW2025-BE/.project
+IngSW2025-BE/.classpath
+IngSW2025-BE/.settings/
+
+# Java
+IngSW2025-BE/*.class
+IngSW2025-BE/*.jar
+IngSW2025-BE/*.war
+IngSW2025-BE/*.ear
+
+# Spring Boot
+IngSW2025-BE/target/
+
+# NetBeans
+IngSW2025-BE/nb-configuration.xml
+IngSW2025-BE/nbproject/
+
+# ===========================
+# Global exclusions
+# ===========================
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+*.sublime-*
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local

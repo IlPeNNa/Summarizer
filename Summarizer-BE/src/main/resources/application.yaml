@@ -13,3 +13,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+
+# Configurazione servizio NLP Python (black box)
+nlp:
+  service:
+    url: http://localhost:8000

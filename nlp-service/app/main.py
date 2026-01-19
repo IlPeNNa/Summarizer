@@ -7,14 +7,14 @@ from pydantic import BaseModel
 from typing import Optional
 import uvicorn
 
-from summarizer import BARTSummarizer
+from summarizer import Summarizer
 from cleaning import clean_text
 from chunking import chunk_text
 
 app = FastAPI(title="NLP Summarization Service")
 
-# Inizializza il summarizer una sola volta all'avvio
-summarizer = BARTSummarizer()
+# TODO: Inizializzare il summarizer con i modelli scelti
+summarizer = Summarizer()
 
 
 class SummarizationRequest(BaseModel):
@@ -36,7 +36,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "model": "facebook/mbart-large-50-many-to-many-mmt"}
+    return {"status": "healthy", "model": "not_configured"}
 
 
 @app.post("/summarize", response_model=SummarizationResponse)

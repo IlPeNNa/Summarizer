@@ -1,13 +1,19 @@
 # NLP Summarization Service
 
-Servizio Python per il riassunto di testi utilizzando il modello BART di Hugging Face.
+Servizio Python per il riassunto di testi.
 
 ## Caratteristiche
 
-- **Modello BART**: Utilizza `facebook/bart-large-cnn` per riassunti di alta qualità
-- **Chunking intelligente**: Gestisce testi lunghi spezzandoli in chunk gestibili (~1024 token)
+- **Modello configurabile**: Placeholder per modelli di summarization personalizzati
+- **Chunking intelligente**: Gestisce testi lunghi spezzandoli in chunk
 - **Estrazione multi-formato**: Supporta PDF, DOCX, HTML e TXT
 - **API REST**: Interfaccia FastAPI per facile integrazione
+
+## TODO
+
+- [ ] Scegliere e configurare modello multilingua per riassunti
+- [ ] Opzionale: Aggiungere modello specifico per italiano
+- [ ] Implementare logica di summarization in `summarizer.py`
 
 ## Struttura
 
@@ -61,22 +67,13 @@ Il server sarà disponibile su `http://localhost:8000`
 
 - `GET /` - Info sul servizio
 - `GET /health` - Health check
-- `POST /summarize` - Riassumi un testo
+- `POST /summarize` - Riassumi un testo (da implementare con il modello scelto)
 
-### Esempio di richiesta:
+## Modelli da Configurare
 
-```bash
-curl -X POST "http://localhost:8000/summarize" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Il tuo testo lungo da riassumere...",
-    "max_length": 150,
-    "min_length": 50
-  }'
-```
+Quando sarai pronto a configurare i modelli:
 
-## Note
-
-- Il modello BART viene caricato **una sola volta** all'avvio del servizio
-- Il limite di token di BART è ~1024, gestito automaticamente dal chunking
-- Per testi molto lunghi, i chunk vengono riassunti separatamente e poi combinati
+1. **Modello multilingua**: Scegli un modello per riassunti in più lingue
+2. **Modello italiano** (opzionale): Aggiungi un modello specifico per italiano
+3. Aggiorna `summarizer.py` con il caricamento e l'utilizzo dei modelli
+4. Aggiungi le dipendenze necessarie in `requirements.txt`

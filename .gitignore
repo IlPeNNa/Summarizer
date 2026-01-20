@@ -1,0 +1,51 @@
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+.Python
+
+# Ambiente virtuale Python
+nlp-service/venv/
+nlp-service/env/
+nlp-service/ENV/
+venv/
+env/
+
+# Node.js
+**/node_modules/
+package-lock.json
+npm-debug.log*
+
+# Java/Gradle
+**/.gradle/
+**/build/
+**/*.class
+**/.classpath
+**/.project
+**/.settings/
+
+# IDE
+.vscode/
+.idea/
+**/*.swp
+**/*.swo
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+**/desktop.ini
+
+# Modelli NLP e cache
+**/.cache/
+**/models/
+**/*.bin
+**/*.safetensors
+
+# Logs
+**/*.log
+
+# Database locale
+**/*.db
+**/*.sqlite

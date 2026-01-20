@@ -1,0 +1,5 @@
+{
+  "text": "L'intelligenza artificiale è una tecnologia che sta rivoluzionando il mondo moderno. Comprende algoritmi di machine learning, reti neurali e sistemi di elaborazione del linguaggio naturale. Queste tecnologie permettono ai computer di apprendere dai dati, riconoscere pattern complessi e prendere decisioni autonome. Le applicazioni dell'IA spaziano dalla medicina alla finanza, dall'automotive ai servizi di assistenza virtuale. Nel campo medico, l'IA aiuta i medici nella diagnosi precoce di malattie e nell'analisi di immagini radiologiche. Nel settore finanziario viene utilizzata per rilevare frodi e ottimizzare gli investimenti.",
+  "max_length": 50,
+  "min_length": 20
+}

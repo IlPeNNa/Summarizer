@@ -13,7 +13,7 @@ from chunking import chunk_text
 
 app = FastAPI(title="NLP Summarization Service")
 
-# TODO: Inizializzare il summarizer con i modelli scelti
+# Inizializza il summarizer con mT5
 summarizer = Summarizer()
 
 
@@ -36,7 +36,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "model": "not_configured"}
+    return {"status": "healthy", "model": "ARTeLab/it5-summarization-mlsum"}
 
 
 @app.post("/summarize", response_model=SummarizationResponse)

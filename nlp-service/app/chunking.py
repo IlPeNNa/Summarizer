@@ -7,16 +7,16 @@ import re
 
 def chunk_text(
     text: str, 
-    max_tokens: int = 900,
-    overlap: int = 50,
+    max_tokens: int = 1024,
+    overlap: int = 100,
     preserve_sentences: bool = True
 ) -> List[str]:
     """
-    Divide il testo in chunk gestibili dal modello BART.
+    Divide il testo in chunk gestibili dal modello mBART.
     
     Args:
         text: Testo da dividere
-        max_tokens: Numero massimo di token per chunk (900 per sicurezza, BART supporta ~1024)
+        max_tokens: Numero massimo di token per chunk (1024 per mBART)
         overlap: Numero di token di sovrapposizione tra chunk (per mantenere contesto)
         preserve_sentences: Se True, cerca di non spezzare le frasi
         

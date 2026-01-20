@@ -48,7 +48,7 @@ pip install -r requirements.txt
 python app/main.py
 ```
 
-**NOTA**: Al primo avvio su un nuovo PC, il modello `google/mt5-base` (~2.3 GB) verrà scaricato automaticamente da Hugging Face. Questo richiederà alcuni minuti.
+**NOTA**: Al primo avvio su un nuovo PC, il modello `ARTeLab/it5-summarization-mlsum` verrà scaricato automaticamente da Hugging Face. Questo richiederà alcuni minuti.
 
 Il modello viene salvato in cache:
 - Windows: `C:\Users\<user>\.cache\huggingface\hub\`
@@ -68,5 +68,5 @@ curl http://localhost:8000/health
 
 Risposta attesa:
 ```json
-{"status": "healthy", "model": "google/mt5-base"}
+{"status": "healthy", "model": "ARTeLab/it5-summarization-mlsum"}
 ```

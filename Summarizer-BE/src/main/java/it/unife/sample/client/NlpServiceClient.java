@@ -21,6 +21,7 @@ public class NlpServiceClient {
         this.nlpServiceUrl = nlpServiceUrl;
         this.restClient = RestClient.builder()
                 .baseUrl(nlpServiceUrl)
+                .defaultHeader("Content-Type", "application/json")
                 .build();
     }
     
@@ -50,6 +51,7 @@ public class NlpServiceClient {
             
             SummarizationResponse response = restClient.post()
                     .uri("/summarize")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
                     .body(SummarizationResponse.class);

@@ -1,3 +1,32 @@
-<router-outlet>
-    <h1>Welcome to Summarizer</h1>
-</router-outlet>
+<div class="container">
+  <header class="header">
+    <h1>📝 {{ title }}</h1>
+    <p class="subtitle">Riassumi i tuoi testi con intelligenza artificiale</p>
+  </header>
+
+  <!-- Messaggio errore globale -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    ✗ {{ errorMessage }}
+  </div>
+
+  <div class="main-content">
+    <!-- Componente Input Panel -->
+    <app-input-panel
+      (summarizeRequested)="onSummarizeRequested($event)"
+      (resetRequested)="onResetRequested()"
+    ></app-input-panel>
+
+    <!-- Componente Output Panel -->
+    <app-output-panel
+      [summary]="summary"
+      [originalLength]="originalLength"
+      [summaryLength]="summaryLength"
+      [isLoading]="isLoading"
+      (downloadTxtRequested)="onDownloadTxt()"
+      (downloadDocxRequested)="onDownloadDocx()"
+      (downloadPdfRequested)="onDownloadPdf()"
+    ></app-output-panel>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

@@ -1,31 +1,124 @@
-<div class="container">
-  <header class="header">
-    <h1>📝 {{ title }}</h1>
-    <p class="subtitle">Riassumi i tuoi testi con intelligenza artificiale</p>
-  </header>
-
-  <!-- Messaggio errore globale -->
-  <div *ngIf="errorMessage" class="alert alert-error">
-    ✗ {{ errorMessage }}
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <button class="account-btn">Account</button>
   </div>
+</nav>
 
-  <div class="main-content">
-    <!-- Componente Input Panel -->
-    <app-input-panel
-      (summarizeRequested)="onSummarizeRequested($event)"
-      (resetRequested)="onResetRequested()"
-    ></app-input-panel>
+<!-- Main Container -->
+<div class="main-container">
+  <!-- Titolo -->
+  <h1 class="page-title">Summarizer</h1>
+  
+  <!-- Form unificato con 2 colonne -->
+  <div class="form-wrapper">
+    <!-- Header con controlli -->
+    <div class="form-header">
+      <div class="length-controls">
+        <button 
+          *ngFor="let preset of lengthPresets" 
+          [class.active]="selectedPreset === preset.value"
+          (click)="selectPreset(preset.value)"
+          class="preset-btn">
+          {{ preset.label }}
+        </button>
+      </div>
+      <div class="slider-controls" *ngIf="selectedPreset === lengthPresets[2].value">
+        <label>
+          Lunghezza: {{ minLength }} - {{ maxLength }} parole
+          <input type="range" [(ngModel)]="minLength" min="30" max="200" />
+          <input type="range" [(ngModel)]="maxLength" min="50" max="300" />
+        </label>
+      </div>
+    </div>
 
-    <!-- Componente Output Panel -->
-    <app-output-panel
-      [summary]="summary"
-      [originalLength]="originalLength"
-      [summaryLength]="summaryLength"
-      [isLoading]="isLoading"
-      (downloadTxtRequested)="onDownloadTxt()"
-      (downloadDocxRequested)="onDownloadDocx()"
-      (downloadPdfRequested)="onDownloadPdf()"
-    ></app-output-panel>
+    <!-- Contenuto principale a 2 colonne -->
+    <div class="two-column-layout">
+      <!-- Colonna sinistra: Input -->
+      <div class="input-column">
+        <div class="input-section">
+          <textarea 
+            [(ngModel)]="inputText"
+            placeholder="Inserisci qui il tuo testo..."
+            class="text-input"
+            [disabled]="isLoading"
+          ></textarea>
+          
+          <div class="file-controls">
+            <label class="file-btn">
+              <input 
+                type="file" 
+                (change)="onFileSelect($event)"
+                accept=".txt,.pdf,.docx,.html"
+                [disabled]="isLoading"
+                hidden
+              />
+              <span class="upload-icon">⬆</span> Carica da file
+            </label>
+            <span *ngIf="selectedFileName" class="file-name">{{ selectedFileName }}</span>
+          </div>
+
+          <button 
+            (click)="summarize()"
+            [disabled]="!inputText || isLoading"
+            class="summarize-btn">
+            {{ isLoading ? 'Elaborazione...' : 'Riassumere' }}
+          </button>
+
+          <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonna destra: Output -->
+      <div class="output-column">
+        <div class="output-section">
+          <div *ngIf="!summary && !isLoading" class="empty-state">
+            <div class="empty-icon">📄</div>
+            <p>Il riassunto apparirà qui</p>
+          </div>
+
+          <div *ngIf="isLoading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Generazione riassunto in corso...</p>
+          </div>
+
+          <div *ngIf="summary && !isLoading" class="summary-result">
+            <!-- Tab header con conteggio parole -->
+            <div class="summary-header">
+              <div class="summary-tab active">Riassunto 1</div>
+              <div class="word-count">{{ summaryLength }} Parole</div>
+            </div>
+            
+            <!-- Testo con scrollbar -->
+            <div class="summary-text-container">
+              <div class="summary-text">{{ summary }}</div>
+            </div>
+            
+            <!-- Action buttons in basso -->
+            <div class="summary-actions">
+              <button class="action-icon-btn" title="Lascia feedback">
+                <span class="icon-emoji">😊</span>
+              </button>
+              <button (click)="copySummary()" class="action-icon-btn" title="Copia">
+                <span class="icon-copy">📋</span>
+              </button>
+              <button (click)="toggleDownloadMenu()" class="action-icon-btn" title="Scarica">
+                <span class="icon-download">⬇</span>
+              </button>
+              
+              <!-- Menu download (solo se aperto) -->
+              <div *ngIf="showDownloadMenu" class="download-menu">
+                <button (click)="downloadTxt()" class="download-menu-item">TXT</button>
+                <button (click)="downloadDocx()" class="download-menu-item">DOCX</button>
+                <button (click)="downloadPdf()" class="download-menu-item">PDF</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

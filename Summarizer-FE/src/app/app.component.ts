@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { InputPanelComponent } from './components/input-panel/input-panel.component';
-import { OutputPanelComponent } from './components/output-panel/output-panel.component';
+import { FormsModule } from '@angular/forms';
 import { SummarizerService } from './services/summarizer.service';
-import { SummarizationRequest, SummaryParameters } from './models/summarization.model';
+import { SummarizationRequest, SummaryLengthPreset } from './models/summarization.model';
 
 @Component({
   selector: 'app-root',
@@ -12,14 +11,27 @@ import { SummarizationRequest, SummaryParameters } from './models/summarization.
   imports: [
     RouterOutlet, 
     CommonModule,
-    InputPanelComponent,
-    OutputPanelComponent
+    FormsModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'Summarizer - Riassumi i tuoi testi';
+  title = 'Summarizer';
+  
+  // Input data
+  inputText: string = '';
+  selectedFileName: string = '';
+  
+  // Parametri lunghezza
+  lengthPresets = [
+    { label: 'Paragrafo', value: SummaryLengthPreset.SHORT },
+    { label: 'Punti Elenco', value: SummaryLengthPreset.MEDIUM },
+    { label: 'Personalizzato', value: SummaryLengthPreset.CUSTOM }
+  ];
+  selectedPreset: SummaryLengthPreset = SummaryLengthPreset.SHORT;
+  minLength: number = 30;
+  maxLength: number = 80;
   
   // Output data
   summary: string = '';
@@ -29,18 +41,51 @@ export class AppComponent {
   // Stati
   isLoading: boolean = false;
   errorMessage: string = '';
+  showDownloadMenu: boolean = false;
 
   constructor(private summarizerService: SummarizerService) {}
   
-  onSummarizeRequested(event: { text: string, params: SummaryParameters }): void {
+  selectPreset(preset: SummaryLengthPreset): void {
+    this.selectedPreset = preset;
+    switch (preset) {
+      case SummaryLengthPreset.SHORT:
+        this.minLength = 30;
+        this.maxLength = 80;
+        break;
+      case SummaryLengthPreset.MEDIUM:
+        this.minLength = 50;
+        this.maxLength = 150;
+        break;
+      case SummaryLengthPreset.CUSTOM:
+        break;
+    }
+  }
+
+  onFileSelect(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.selectedFileName = file.name;
+    const reader = new FileReader();
+    
+    reader.onload = (e: any) => {
+      this.inputText = e.target.result;
+    };
+    
+    reader.readAsText(file);
+  }
+
+  summarize(): void {
+    if (!this.inputText) return;
+    
     this.isLoading = true;
     this.errorMessage = '';
     this.summary = '';
     
     const request: SummarizationRequest = {
-      text: event.text,
-      minLength: event.params.minLength,
-      maxLength: event.params.maxLength
+      text: this.inputText,
+      minLength: this.minLength,
+      maxLength: this.maxLength
     };
     
     this.summarizerService.summarize(request).subscribe({
@@ -58,24 +103,33 @@ export class AppComponent {
       }
     });
   }
-  
-  onResetRequested(): void {
-    this.summary = '';
-    this.originalLength = 0;
-    this.summaryLength = 0;
-    this.errorMessage = '';
+
+  get reductionPercentage(): number {
+    if (this.originalLength === 0) return 0;
+    return Math.round(((this.originalLength - this.summaryLength) / this.originalLength) * 100);
+  }
+
+  copySummary(): void {
+    if (!this.summary) return;
+    navigator.clipboard.writeText(this.summary).then(() => {
+      console.log('Riassunto copiato negli appunti');
+    });
+  }
+
+  toggleDownloadMenu(): void {
+    this.showDownloadMenu = !this.showDownloadMenu;
   }
   
-  onDownloadTxt(): void {
+  downloadTxt(): void {
     if (!this.summary) return;
-    
+    this.showDownloadMenu = false;
     const blob = new Blob([this.summary], { type: 'text/plain' });
     this.summarizerService.downloadBlob(blob, 'riassunto.txt');
   }
   
-  onDownloadDocx(): void {
+  downloadDocx(): void {
     if (!this.summary) return;
-    
+    this.showDownloadMenu = false;
     this.summarizerService.downloadDocx(this.summary).subscribe({
       next: (blob) => {
         this.summarizerService.downloadBlob(blob, 'riassunto.docx');
@@ -88,9 +142,9 @@ export class AppComponent {
     });
   }
   
-  onDownloadPdf(): void {
+  downloadPdf(): void {
     if (!this.summary) return;
-    
+    this.showDownloadMenu = false;
     this.summarizerService.downloadPdf(this.summary).subscribe({
       next: (blob) => {
         this.summarizerService.downloadBlob(blob, 'riassunto.pdf');

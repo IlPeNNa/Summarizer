@@ -1,0 +1,50 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start NLP Service",
+      "type": "shell",
+      "command": "cd nlp-service; if (Test-Path '.venv\\Scripts\\Activate.ps1') { .venv\\Scripts\\Activate.ps1 }; python app/main.py",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "cd Summarizer-BE; .\\gradlew bootRun",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Start Frontend",
+      "type": "shell",
+      "command": "cd Summarizer-FE; npm start",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Start All Services",
+      "dependsOn": [
+        "Start NLP Service",
+        "Start Backend",
+        "Start Frontend"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

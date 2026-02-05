@@ -37,6 +37,9 @@
       <!-- Colonna sinistra: Input -->
       <div class="input-column">
         <div class="input-section">
+          <div class="char-counter" [class.valid]="inputText.length >= 100">
+            {{ inputText.length }} / 100 caratteri minimi
+          </div>
           <textarea 
             [(ngModel)]="inputText"
             placeholder="Inserisci qui il tuo testo..."

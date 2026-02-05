@@ -78,6 +78,27 @@ export class AppComponent {
   summarize(): void {
     if (!this.inputText) return;
     
+    // Validazione lato client
+    if (this.inputText.trim().length < 100) {
+      this.errorMessage = 'Il testo è troppo corto per essere riassunto (minimo 100 caratteri)';
+      return;
+    }
+    
+    if (this.minLength < 10) {
+      this.errorMessage = 'La lunghezza minima deve essere almeno 10 parole';
+      return;
+    }
+    
+    if (this.maxLength > 500) {
+      this.errorMessage = 'La lunghezza massima non può superare 500 parole';
+      return;
+    }
+    
+    if (this.maxLength <= this.minLength) {
+      this.errorMessage = 'La lunghezza massima deve essere maggiore della lunghezza minima';
+      return;
+    }
+    
     this.isLoading = true;
     this.errorMessage = '';
     this.summary = '';

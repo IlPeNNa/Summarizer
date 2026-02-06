@@ -14,7 +14,7 @@ import { SummarizationRequest, SummaryLengthPreset } from './models/summarizatio
     FormsModule
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'Summarizer';
@@ -42,6 +42,7 @@ export class AppComponent {
   isLoading: boolean = false;
   errorMessage: string = '';
   showDownloadMenu: boolean = false;
+  isDragOver: boolean = false;
 
   constructor(private summarizerService: SummarizerService) {}
   
@@ -75,6 +76,44 @@ export class AppComponent {
     reader.readAsText(file);
   }
 
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      this.selectedFileName = file.name;
+      const reader = new FileReader();
+      
+      reader.onload = (e: any) => {
+        this.inputText = e.target.result;
+      };
+      
+      reader.readAsText(file);
+    }
+  }
+
+  clearText(): void {
+    this.inputText = '';
+    this.selectedFileName = '';
+    this.errorMessage = '';
+    this.summary = '';
+  }
+
   summarize(): void {
     if (!this.inputText) return;
     
@@ -104,7 +143,7 @@ export class AppComponent {
     this.summary = '';
     
     const request: SummarizationRequest = {
-      text: this.inputText,
+      input: this.inputText,
       minLength: this.minLength,
       maxLength: this.maxLength
     };

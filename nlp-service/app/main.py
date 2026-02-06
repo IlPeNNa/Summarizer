@@ -18,7 +18,7 @@ summarizer = Summarizer()
 
 
 class SummarizationRequest(BaseModel):
-    text: str
+    input: str
     max_length: Optional[int] = 150
     min_length: Optional[int] = 50
 
@@ -46,7 +46,7 @@ async def summarize_text(request: SummarizationRequest):
     """
     try:
         # 1. Pulizia del testo
-        cleaned_text = clean_text(request.text)
+        cleaned_text = clean_text(request.input)
         
         # 2. Chunking del testo (gestisce il limite di 1024 token)
         chunks = chunk_text(cleaned_text)

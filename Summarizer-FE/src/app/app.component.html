@@ -25,9 +25,9 @@
       </div>
       <div class="slider-controls" *ngIf="selectedPreset === lengthPresets[2].value">
         <label>
-          Lunghezza: {{ minLength }} - {{ maxLength }} parole
-          <input type="range" [(ngModel)]="minLength" min="30" max="200" />
-          <input type="range" [(ngModel)]="maxLength" min="50" max="300" />
+          Lunghezza: {{ minLength }} - {{ maxLength }} parole<br>
+          MIN<input type="range" [(ngModel)]="minLength" min="30" max="200" />
+          MAX<input type="range" [(ngModel)]="maxLength" min="50" max="400" />
         </label>
       </div>
     </div>
@@ -44,7 +44,11 @@
             [(ngModel)]="inputText"
             placeholder="Inserisci qui il tuo testo..."
             class="text-input"
+            [class.drag-over]="isDragOver"
             [disabled]="isLoading"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
           ></textarea>
           
           <div class="file-controls">
@@ -56,17 +60,21 @@
                 [disabled]="isLoading"
                 hidden
               />
-              <span class="upload-icon">⬆</span> Carica da file
+              <img src="/upload.ico" alt="Upload" class="upload-icon"> Carica file
             </label>
             <span *ngIf="selectedFileName" class="file-name">{{ selectedFileName }}</span>
+            
+            <span class="reset-icon">
+              <img src="/reset.ico" alt="Clear" (click)="clearText()" />
+            </span>
+            
+            <button 
+              (click)="summarize()"
+              [disabled]="!inputText || isLoading"
+              class="summarize-btn">
+              {{ isLoading ? 'Elaborazione...' : 'Riassumere' }}
+            </button>
           </div>
-
-          <button 
-            (click)="summarize()"
-            [disabled]="!inputText || isLoading"
-            class="summarize-btn">
-            {{ isLoading ? 'Elaborazione...' : 'Riassumere' }}
-          </button>
 
           <div *ngIf="errorMessage" class="error-message">
             {{ errorMessage }}

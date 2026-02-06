@@ -5,31 +5,31 @@ package it.unife.sample.dto;
  */
 public class SummarizationRequest {
     
-    private String text;
+    private String input;
     private Integer maxLength;
     private Integer minLength;
     
     public SummarizationRequest() {
     }
     
-    public SummarizationRequest(String text) {
-        this.text = text;
+    public SummarizationRequest(String input) {
+        this.input = input;
         this.maxLength = 150;
         this.minLength = 50;
     }
     
-    public SummarizationRequest(String text, Integer maxLength, Integer minLength) {
-        this.text = text;
+    public SummarizationRequest(String input, Integer maxLength, Integer minLength) {
+        this.input = input;
         this.maxLength = maxLength;
         this.minLength = minLength;
     }
     
-    public String getText() {
-        return text;
+    public String getInput() {
+        return input;
     }
     
-    public void setText(String text) {
-        this.text = text;
+    public void setInput(String input) {
+        this.input = input;
     }
     
     public Integer getMaxLength() {

@@ -43,7 +43,7 @@ public class SummarizerController {
             int minLength = request.getMinLength() != null ? request.getMinLength() : 50;
             
             SummarizationResponse response = summarizerService.summarizeText(
-                    request.getText(), 
+                    request.getInput(), 
                     maxLength, 
                     minLength
             );

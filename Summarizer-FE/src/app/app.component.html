@@ -98,7 +98,7 @@
           <div *ngIf="summary && !isLoading" class="summary-result">
             <!-- Tab header con conteggio parole -->
             <div class="summary-header">
-              <div class="summary-tab active">Riassunto 1</div>
+              <div class="summary-tab active">Riassunto</div>
               <div class="word-count">{{ summaryLength }} Parole</div>
             </div>
             
@@ -116,7 +116,7 @@
                 <span class="icon-copy">📋</span>
               </button>
               <button (click)="toggleDownloadMenu()" class="action-icon-btn" title="Scarica">
-                <span class="icon-download">⬇</span>
+                <span class="icon-download"><img src="/download.ico" alt="Download" class="download-icon"></span>
               </button>
               
               <!-- Menu download (solo se aperto) -->

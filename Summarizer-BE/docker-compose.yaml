@@ -3,10 +3,8 @@ services:
     image: mysql:8.0
     container_name: mysql_myapp
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: mydb
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypassword
+      MYSQL_ROOT_PASSWORD: Tfovygv$185956
+      MYSQL_DATABASE: summarizer
     ports:
       - "3306:3306"
     volumes:

@@ -19,8 +19,8 @@ summarizer = Summarizer()
 
 class SummarizationRequest(BaseModel):
     input: str
-    max_length: Optional[int] = 150
-    min_length: Optional[int] = 50
+    maxLength: Optional[int] = 150
+    minLength: Optional[int] = 50
 
 
 class SummarizationResponse(BaseModel):
@@ -56,8 +56,8 @@ async def summarize_text(request: SummarizationRequest):
         for chunk in chunks:
             summary = summarizer.summarize(
                 chunk, 
-                max_length=request.max_length,
-                min_length=request.min_length
+                max_length=request.maxLength,
+                min_length=request.minLength
             )
             summaries.append(summary)
         
@@ -66,7 +66,7 @@ async def summarize_text(request: SummarizationRequest):
         
         return SummarizationResponse(
             summary=final_summary,
-            original_length=len(request.text),
+            original_length=len(request.input),
             summary_length=len(final_summary)
         )
     

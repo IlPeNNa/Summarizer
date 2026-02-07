@@ -38,6 +38,8 @@ public class SummarizerController {
     @PostMapping
     public ResponseEntity<?> summarize(@RequestBody SummarizationRequest request) {
         try {
+            System.out.println("Ricevuta richiesta: input=" + request.getInput() + ", maxLength=" + request.getMaxLength() + ", minLength=" + request.getMinLength());
+            
             // Parametri di default se non specificati
             int maxLength = request.getMaxLength() != null ? request.getMaxLength() : 150;
             int minLength = request.getMinLength() != null ? request.getMinLength() : 50;

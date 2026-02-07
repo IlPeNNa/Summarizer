@@ -3,9 +3,10 @@ package it.unife.sample.client;
 import it.unife.sample.dto.SummarizationRequest;
 import it.unife.sample.dto.SummarizationResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Client per comunicare con il servizio NLP Python (black box).
@@ -14,15 +15,12 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class NlpServiceClient {
     
-    private final RestClient restClient;
+    private final RestTemplate restTemplate;
     private final String nlpServiceUrl;
     
     public NlpServiceClient(@Value("${nlp.service.url:http://localhost:8000}") String nlpServiceUrl) {
         this.nlpServiceUrl = nlpServiceUrl;
-        this.restClient = RestClient.builder()
-                .baseUrl(nlpServiceUrl)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
+        this.restTemplate = new RestTemplate();
     }
     
     /**
@@ -49,21 +47,35 @@ public class NlpServiceClient {
         try {
             SummarizationRequest request = new SummarizationRequest(text, maxLength, minLength);
             
-            SummarizationResponse response = restClient.post()
-                    .uri("/summarize")
-                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                    .body(request)
-                    .retrieve()
-                    .body(SummarizationResponse.class);
+            // Configura gli header
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
             
-            if (response == null) {
+            // Crea l'entità HTTP con body e headers
+            HttpEntity<SummarizationRequest> entity = new HttpEntity<>(request, headers);
+            
+            System.out.println("Invio richiesta al servizio NLP: " + nlpServiceUrl + "/summarize");
+            System.out.println("Input length: " + text.length() + ", maxLength: " + maxLength + ", minLength: " + minLength);
+            
+            // Invia la richiesta POST
+            ResponseEntity<SummarizationResponse> response = restTemplate.exchange(
+                    nlpServiceUrl + "/summarize",
+                    HttpMethod.POST,
+                    entity,
+                    SummarizationResponse.class
+            );
+            
+            if (response.getBody() == null) {
                 throw new NlpServiceException("Risposta nulla dal servizio NLP");
             }
             
-            return response;
+            System.out.println("Risposta ricevuta con successo!");
+            return response.getBody();
             
         } catch (RestClientException e) {
             throw new NlpServiceException("Errore nella comunicazione con il servizio NLP: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new NlpServiceException("Errore imprevisto: " + e.getMessage(), e);
         }
     }
     
@@ -74,10 +86,7 @@ public class NlpServiceClient {
      */
     public boolean isHealthy() {
         try {
-            restClient.get()
-                    .uri("/health")
-                    .retrieve()
-                    .toBodilessEntity();
+            restTemplate.getForEntity(nlpServiceUrl + "/health", String.class);
             return true;
         } catch (Exception e) {
             return false;

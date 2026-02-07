@@ -1,12 +1,19 @@
 package it.unife.sample.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * DTO per la risposta dal servizio NLP.
  */
 public class SummarizationResponse {
     
+    @JsonProperty("summary")
     private String summary;
+    
+    @JsonProperty("original_length")
     private Integer originalLength;
+    
+    @JsonProperty("summary_length")
     private Integer summaryLength;
     
     public SummarizationResponse() {

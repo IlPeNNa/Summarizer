@@ -1,12 +1,19 @@
 package it.unife.sample.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * DTO per la richiesta di summarization al servizio NLP.
  */
 public class SummarizationRequest {
     
+    @JsonProperty("input")
     private String input;
+    
+    @JsonProperty("maxLength")
     private Integer maxLength;
+    
+    @JsonProperty("minLength")
     private Integer minLength;
     
     public SummarizationRequest() {

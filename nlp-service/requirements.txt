@@ -7,6 +7,7 @@ pydantic>=2.5.3
 transformers>=4.36.0
 torch>=2.0.0
 sentencepiece>=0.1.99
+protobuf>=3.20.0
 
 # Estrazione testo da documenti
 PyPDF2>=3.0.1
@@ -17,3 +18,4 @@ lxml>=5.1.0
 # Utilità
 requests>=2.31.0
 python-multipart>=0.0.6
+langdetect>=1.0.9

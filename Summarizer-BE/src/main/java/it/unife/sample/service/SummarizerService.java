@@ -51,9 +51,24 @@ public class SummarizerService {
      */
     public SummarizationResponse summarizeText(String text, int maxLength, int minLength) 
             throws NlpServiceClient.NlpServiceException {
+        return summarizeText(text, maxLength, minLength, "paragraph");
+    }
+    
+    /**
+     * Riassume un testo con parametri personalizzati e formato.
+     * 
+     * @param text Testo da riassumere
+     * @param maxLength Lunghezza massima del riassunto
+     * @param minLength Lunghezza minima del riassunto
+     * @param format Formato del riassunto (paragraph, bullet)
+     * @return Risposta con il riassunto
+     * @throws NlpServiceClient.NlpServiceException se il servizio NLP fallisce
+     */
+    public SummarizationResponse summarizeText(String text, int maxLength, int minLength, String format) 
+            throws NlpServiceClient.NlpServiceException {
         validateText(text);
         validateLengthParameters(maxLength, minLength);
-        return nlpServiceClient.summarize(text, maxLength, minLength);
+        return nlpServiceClient.summarize(text, maxLength, minLength, format);
     }
     
     /**

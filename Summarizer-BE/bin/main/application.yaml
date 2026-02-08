@@ -3,10 +3,13 @@ spring:
     name: myapp
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+  
+  # Database configuration (currently disabled)
+  # Uncomment and configure when database is needed
   # datasource:
   #   url: jdbc:mysql://localhost:3306/summarizer
-  #   username: root
-  #   password: Tfovygv$185956
+  #   username: your_username
+  #   password: ${DB_PASSWORD:your_password}  # Use environment variable
   #   driver-class-name: com.mysql.cj.jdbc.Driver
   # jpa:
   #   hibernate:
@@ -16,7 +19,6 @@ spring:
   #     hibernate:
   #       dialect: org.hibernate.dialect.MySQLDialect
   
-  # Configurazione upload file
   servlet:
     multipart:
       enabled: true

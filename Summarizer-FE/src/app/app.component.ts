@@ -25,13 +25,14 @@ export class AppComponent {
   
   // Parametri lunghezza
   lengthPresets = [
-    { label: 'Paragrafo', value: SummaryLengthPreset.SHORT },
-    { label: 'Punti Elenco', value: SummaryLengthPreset.MEDIUM },
-    { label: 'Personalizzato', value: SummaryLengthPreset.CUSTOM }
+    { label: 'Standard', value: SummaryLengthPreset.SHORT, description: '30-80 parole' },
+    { label: 'Punti Elenco', value: SummaryLengthPreset.MEDIUM, description: '50-150 parole' },
+    { label: 'Personalizzato', value: SummaryLengthPreset.CUSTOM, description: 'Personalizzabile' }
   ];
   selectedPreset: SummaryLengthPreset = SummaryLengthPreset.SHORT;
   minLength: number = 30;
   maxLength: number = 80;
+  format: string = 'paragraph';
   
   // Output data
   summary: string = '';
@@ -43,6 +44,16 @@ export class AppComponent {
   errorMessage: string = '';
   showDownloadMenu: boolean = false;
   isDragOver: boolean = false;
+  
+  // Auth modal
+  showAuthModal: boolean = false;
+  showRegisterForm: boolean = false;
+  showPassword: boolean = false;
+  loginEmail: string = '';
+  loginPassword: string = '';
+  registerEmail: string = '';
+  registerPassword: string = '';
+  registerConfirmPassword: string = '';
 
   constructor(private summarizerService: SummarizerService) {}
   
@@ -52,12 +63,15 @@ export class AppComponent {
       case SummaryLengthPreset.SHORT:
         this.minLength = 30;
         this.maxLength = 80;
+        this.format = 'paragraph';
         break;
       case SummaryLengthPreset.MEDIUM:
         this.minLength = 50;
         this.maxLength = 150;
+        this.format = 'bullet';
         break;
       case SummaryLengthPreset.CUSTOM:
+        this.format = 'paragraph';
         break;
     }
   }
@@ -118,8 +132,8 @@ export class AppComponent {
     if (!this.inputText) return;
     
     // Validazione lato client
-    if (this.inputText.trim().length < 100) {
-      this.errorMessage = 'Il testo è troppo corto per essere riassunto (minimo 100 caratteri)';
+    if (this.inputWordCount < 100) {
+      this.errorMessage = 'Il testo è troppo corto per essere riassunto (minimo 100 parole)';
       return;
     }
     
@@ -142,10 +156,16 @@ export class AppComponent {
     this.errorMessage = '';
     this.summary = '';
     
+    // Converti parole in token approssimativi (1 parola ≈ 1.6 token in media)
+    const tokenMultiplier = 1.6;
+    const minTokens = Math.round(this.minLength * tokenMultiplier);
+    const maxTokens = Math.round(this.maxLength * tokenMultiplier);
+    
     const request: SummarizationRequest = {
       input: this.inputText,
-      minLength: this.minLength,
-      maxLength: this.maxLength
+      minLength: minTokens,
+      maxLength: maxTokens,
+      format: this.format
     };
     
     this.summarizerService.summarize(request).subscribe({
@@ -215,5 +235,80 @@ export class AppComponent {
         setTimeout(() => this.errorMessage = '', 5000);
       }
     });
+  }
+  
+  // Auth modal methods
+  toggleAuthModal(): void {
+    this.showAuthModal = !this.showAuthModal;
+    if (!this.showAuthModal) {
+      this.resetAuthForms();
+    }
+  }
+  
+  closeAuthModal(): void {
+    this.showAuthModal = false;
+    this.resetAuthForms();
+  }
+  
+  resetAuthForms(): void {
+    this.showRegisterForm = false;
+    this.showPassword = false;
+    this.loginEmail = '';
+    this.loginPassword = '';
+    this.registerEmail = '';
+    this.registerPassword = '';
+    this.registerConfirmPassword = '';
+  }
+  
+  switchToRegister(event: Event): void {
+    event.preventDefault();
+    this.showRegisterForm = true;
+  }
+  
+  switchToLogin(event: Event): void {
+    event.preventDefault();
+    this.showRegisterForm = false;
+  }
+  
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+  
+  // Helper per contare le parole
+  getWordCount(text: string): number {
+    if (!text || text.trim().length === 0) return 0;
+    return text.trim().split(/\s+/).length;
+  }
+  
+  get inputWordCount(): number {
+    return this.getWordCount(this.inputText);
+  }
+  
+  get summaryWordCount(): number {
+    return this.getWordCount(this.summary);
+  }
+  
+  handleLogin(event: Event): void {
+    event.preventDefault();
+    console.log('Login attempt:', this.loginEmail);
+    // TODO: Implementare la logica di login
+    alert('Login feature coming soon!');
+  }
+  
+  handleRegister(event: Event): void {
+    event.preventDefault();
+    if (this.registerPassword !== this.registerConfirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+    console.log('Register attempt:', this.registerEmail);
+    // TODO: Implementare la logica di registrazione
+    alert('Registration feature coming soon!');
+  }
+  
+  handleForgotPassword(event: Event): void {
+    event.preventDefault();
+    // TODO: Implementare il recupero password
+    alert('Password recovery feature coming soon!');
   }
 }

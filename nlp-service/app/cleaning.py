@@ -21,11 +21,17 @@ def clean_text(text: str) -> str:
     # Rimuove caratteri di controllo e caratteri invisibili
     text = ''.join(char for char in text if char.isprintable() or char in '\n\t ')
     
+    # Rimuovi riferimenti bibliografici [1], [2], [3], ecc.
+    text = re.sub(r'\[\d+\]', '', text)
+    
+    # Rimuovi citazioni multiple tipo [1][2][3]
+    text = re.sub(r'(\[\d+\]\s*)+', '', text)
+    
+    # Rimuovi tutte le newline e sostituiscile con spazi
+    text = text.replace('\n', ' ')
+    
     # Normalizza gli spazi bianchi multipli
     text = re.sub(r'\s+', ' ', text)
-    
-    # Normalizza le newline multiple
-    text = re.sub(r'\n\s*\n', '\n\n', text)
     
     # Rimuove spazi prima della punteggiatura
     text = re.sub(r'\s+([.,!?;:])', r'\1', text)

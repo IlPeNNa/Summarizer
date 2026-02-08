@@ -1,19 +1,22 @@
 package it.unife.sample.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * DTO per la risposta dal servizio NLP.
+ * DTO per la risposta. Accetta snake_case da Python e invia camelCase al frontend.
  */
 public class SummarizationResponse {
     
     @JsonProperty("summary")
     private String summary;
     
-    @JsonProperty("original_length")
+    @JsonProperty("originalLength")
+    @JsonAlias("original_length")
     private Integer originalLength;
     
-    @JsonProperty("summary_length")
+    @JsonProperty("summaryLength")
+    @JsonAlias("summary_length")
     private Integer summaryLength;
     
     public SummarizationResponse() {

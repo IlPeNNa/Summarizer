@@ -2,6 +2,8 @@ package it.unife.sample.client;
 
 import it.unife.sample.dto.SummarizationRequest;
 import it.unife.sample.dto.SummarizationResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
  */
 @Component
 public class NlpServiceClient {
+    
+    private static final Logger log = LoggerFactory.getLogger(NlpServiceClient.class);
     
     private final RestTemplate restTemplate;
     private final String nlpServiceUrl;
@@ -44,20 +48,30 @@ public class NlpServiceClient {
      * @throws NlpServiceException se il servizio NLP non è disponibile o restituisce un errore
      */
     public SummarizationResponse summarize(String text, int maxLength, int minLength) throws NlpServiceException {
+        return summarize(text, maxLength, minLength, "paragraph");
+    }
+    
+    /**
+     * Invia un testo al servizio NLP per la summarization con parametri personalizzati e formato.
+     * 
+     * @param text Testo da riassumere
+     * @param maxLength Lunghezza massima del riassunto
+     * @param minLength Lunghezza minima del riassunto
+     * @param format Formato del riassunto (paragraph, bullet)
+     * @return Risposta con il riassunto
+     * @throws NlpServiceException se il servizio NLP non è disponibile o restituisce un errore
+     */
+    public SummarizationResponse summarize(String text, int maxLength, int minLength, String format) throws NlpServiceException {
         try {
-            SummarizationRequest request = new SummarizationRequest(text, maxLength, minLength);
+            SummarizationRequest request = new SummarizationRequest(text, maxLength, minLength, format);
             
-            // Configura gli header
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            // Crea l'entità HTTP con body e headers
             HttpEntity<SummarizationRequest> entity = new HttpEntity<>(request, headers);
             
-            System.out.println("Invio richiesta al servizio NLP: " + nlpServiceUrl + "/summarize");
-            System.out.println("Input length: " + text.length() + ", maxLength: " + maxLength + ", minLength: " + minLength);
+            log.debug("Invio richiesta NLP - Input length: {}, maxLength: {}, minLength: {}, format: {}", 
+                text.length(), maxLength, minLength, format);
             
-            // Invia la richiesta POST
             ResponseEntity<SummarizationResponse> response = restTemplate.exchange(
                     nlpServiceUrl + "/summarize",
                     HttpMethod.POST,
@@ -69,12 +83,14 @@ public class NlpServiceClient {
                 throw new NlpServiceException("Risposta nulla dal servizio NLP");
             }
             
-            System.out.println("Risposta ricevuta con successo!");
+            log.debug("Risposta NLP ricevuta con successo");
             return response.getBody();
             
         } catch (RestClientException e) {
+            log.error("Errore comunicazione con servizio NLP: {}", e.getMessage());
             throw new NlpServiceException("Errore nella comunicazione con il servizio NLP: " + e.getMessage(), e);
         } catch (Exception e) {
+            log.error("Errore imprevisto: {}", e.getMessage(), e);
             throw new NlpServiceException("Errore imprevisto: " + e.getMessage(), e);
         }
     }

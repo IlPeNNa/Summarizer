@@ -4,6 +4,8 @@ import it.unife.sample.client.NlpServiceClient;
 import it.unife.sample.dto.SummarizationRequest;
 import it.unife.sample.dto.SummarizationResponse;
 import it.unife.sample.service.SummarizerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +27,8 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200")
 public class SummarizerController {
     
+    private static final Logger log = LoggerFactory.getLogger(SummarizerController.class);
+    
     private final SummarizerService summarizerService;
     
     public SummarizerController(SummarizerService summarizerService) {
@@ -38,16 +42,18 @@ public class SummarizerController {
     @PostMapping
     public ResponseEntity<?> summarize(@RequestBody SummarizationRequest request) {
         try {
-            System.out.println("Ricevuta richiesta: input=" + request.getInput() + ", maxLength=" + request.getMaxLength() + ", minLength=" + request.getMinLength());
+            log.debug("Richiesta riassunto - Input length: {}, maxLength: {}, minLength: {}", 
+                request.getInput().length(), request.getMaxLength(), request.getMinLength());
             
-            // Parametri di default se non specificati
             int maxLength = request.getMaxLength() != null ? request.getMaxLength() : 150;
             int minLength = request.getMinLength() != null ? request.getMinLength() : 50;
+            String format = request.getFormat() != null ? request.getFormat() : "paragraph";
             
             SummarizationResponse response = summarizerService.summarizeText(
                     request.getInput(), 
                     maxLength, 
-                    minLength
+                    minLength,
+                    format
             );
             
             return ResponseEntity.ok(response);

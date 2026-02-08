@@ -1,9 +1,134 @@
 <!-- Navbar -->
 <nav class="navbar">
   <div class="navbar-content">
-    <button class="account-btn">Account</button>
+    <button class="account-btn" (click)="toggleAuthModal()">Account</button>
   </div>
 </nav>
+
+<!-- Auth Modal Overlay -->
+<div class="modal-overlay" *ngIf="showAuthModal" (click)="closeAuthModal()">
+  <div class="auth-modal" (click)="$event.stopPropagation()">
+    <!-- Login Form -->
+    <div class="auth-container" *ngIf="!showRegisterForm">
+      <div class="auth-icon">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/>
+        </svg>
+      </div>
+      
+      <h2 class="auth-title">Accedi al tuo account</h2>
+      <p class="auth-subtitle">
+        Non hai un account? 
+        <a href="#" (click)="switchToRegister($event)" class="auth-link">Registrati</a>
+      </p>
+      
+      <form class="auth-form" (submit)="handleLogin($event)">
+        <div class="form-group">
+          <label class="form-label">La tua email</label>
+          <input 
+            type="email" 
+            class="form-input" 
+            placeholder="Inserisci il tuo indirizzo email"
+            [(ngModel)]="loginEmail"
+            name="email"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">La tua password</label>
+          <div class="password-input-wrapper">
+            <input 
+              [type]="showPassword ? 'text' : 'password'"
+              class="form-input" 
+              placeholder="Inserisci la tua password"
+              [(ngModel)]="loginPassword"
+              name="password"
+              required
+            />
+            <button 
+              type="button"
+              class="password-toggle"
+              (click)="togglePasswordVisibility()"
+            >
+              <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="form-footer">
+          <a href="#" class="forgot-link" (click)="handleForgotPassword($event)">Forgot Password?</a>
+        </div>
+        
+        <button type="submit" class="login-btn">Login</button>
+      </form>
+    </div>
+    
+    <!-- Register Form -->
+    <div class="auth-container" *ngIf="showRegisterForm">
+      <div class="auth-icon">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/>
+        </svg>
+      </div>
+      
+      <h2 class="auth-title">Crea un Account</h2>
+      <p class="auth-subtitle">
+        Hai già un account? 
+        <a href="#" (click)="switchToLogin($event)" class="auth-link">Accedi</a>
+      </p>
+      
+      <form class="auth-form" (submit)="handleRegister($event)">
+        <div class="form-group">
+          <label class="form-label">La tua email</label>
+          <input 
+            type="email" 
+            class="form-input" 
+            placeholder="Inserisci il tuo indirizzo email"
+            [(ngModel)]="registerEmail"
+            name="email"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">La tua password</label>
+          <input 
+            type="password"
+            class="form-input" 
+            placeholder="Inserisci la tua password"
+            [(ngModel)]="registerPassword"
+            name="password"
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Conferma la tua password</label>
+          <input 
+            type="password"
+            class="form-input" 
+            placeholder="Conferma la tua password"
+            [(ngModel)]="registerConfirmPassword"
+            name="confirmPassword"
+            required
+          />
+        </div>
+        
+        <button type="submit" class="login-btn">Registrati</button>
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- Main Container -->
 <div class="main-container">
@@ -19,8 +144,10 @@
           *ngFor="let preset of lengthPresets" 
           [class.active]="selectedPreset === preset.value"
           (click)="selectPreset(preset.value)"
-          class="preset-btn">
-          {{ preset.label }}
+          class="preset-btn"
+          [title]="preset.description">
+          <span class="preset-label">{{ preset.label }}</span>
+          <span class="preset-description">{{ preset.description }}</span>
         </button>
       </div>
       <div class="slider-controls" *ngIf="selectedPreset === lengthPresets[2].value">
@@ -37,8 +164,8 @@
       <!-- Colonna sinistra: Input -->
       <div class="input-column">
         <div class="input-section">
-          <div class="char-counter" [class.valid]="inputText.length >= 100">
-            {{ inputText.length }} / 100 caratteri minimi
+          <div class="char-counter" [class.valid]="inputWordCount >= 100">
+            {{ inputWordCount }} / 100 parole minime
           </div>
           <textarea 
             [(ngModel)]="inputText"
@@ -99,7 +226,7 @@
             <!-- Tab header con conteggio parole -->
             <div class="summary-header">
               <div class="summary-tab active">Riassunto</div>
-              <div class="word-count">{{ summaryLength }} Parole</div>
+              <div class="word-count">{{ summaryWordCount }} Parole</div>
             </div>
             
             <!-- Testo con scrollbar -->

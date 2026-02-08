@@ -10,29 +10,30 @@
   background: #f1e7e7;
   border-bottom: 1px solid #e2e8f0;
   padding: 0.75rem 2rem;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-content {
-  max-width: 1400px;
-  margin: 0 auto;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  width: 100%;
 }
 
 .account-btn {
   padding: 0.5rem 1.25rem;
   background: white;
-  border-radius: 5px;
-  border-style: hidden;
+  border-radius: 20px;
+  border: 1px solid transparent;
   cursor: pointer;
   font-size: 0.95rem;
   color: #2d3748;
-
+  transition: border-color 0.2s ease;
+  padding-right: 20px;
+  padding-left: 20px;
 }
 
 .account-btn:hover {
-  border: 1px solid #6c6f74;
+  border-color: #6c6f74;
 }
 
 /* Main Container */
@@ -53,7 +54,7 @@
 .form-wrapper {
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
 
@@ -79,6 +80,19 @@
   font-size: 0.9rem;
   transition: all 0.2s;
   color: #2d3748;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.preset-label {
+  font-weight: 500;
+}
+
+.preset-description {
+  font-size: 0.75rem;
+  color: #718096;
 }
 
 .preset-btn:hover {
@@ -91,6 +105,10 @@
   color: #000000;
   font-weight: 500;
   background-color: #b5bcc2;
+}
+
+.preset-btn.active .preset-description {
+  color: #2d3748;
 }
 
 .slider-controls {
@@ -510,4 +528,191 @@
   .main-container {
     padding: 0 1rem;
   }
+}
+
+/* Auth Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.auth-modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 460px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-icon {
+  width: 70px;
+  height: 70px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.auth-subtitle {
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.auth-link {
+  color: #5b5fc7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border 0.2s ease;
+  background: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #5b5fc7;
+  box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.1);
+}
+
+.form-input::placeholder {
+  color: #cbd5e0;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.password-toggle:hover {
+  opacity: 1;
+}
+
+.form-footer {
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.forgot-link {
+  color: #5b5fc7;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: #2d3748;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.login-btn:hover {
+  background: #1a202c;
+}
+
+.login-btn:active {
+  transform: scale(0.98);
 }

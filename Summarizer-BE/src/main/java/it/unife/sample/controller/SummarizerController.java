@@ -76,6 +76,46 @@ public class SummarizerController {
     }
     
     /**
+     * Estrai testo da un file senza riassumerlo.
+     * POST /api/summarize/extract
+     */
+    @PostMapping("/extract")
+    public ResponseEntity<?> extractText(@RequestParam("file") MultipartFile file) {
+        try {
+            log.debug("Estrazione testo - Nome: {}, Dimensione: {} bytes", 
+                file.getOriginalFilename(), file.getSize());
+            
+            String extractedText = summarizerService.extractTextFromFile(
+                    file.getBytes(), 
+                    file.getOriginalFilename()
+            );
+            
+            return ResponseEntity.ok(Map.of(
+                "text", extractedText,
+                "length", extractedText.length(),
+                "filename", file.getOriginalFilename()
+            ));
+            
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", "Errore nella lettura del file: " + e.getMessage()));
+        } catch (NlpServiceClient.NlpServiceException e) {
+            return ResponseEntity
+                    .status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "Servizio NLP non disponibile: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Errore interno: " + e.getMessage()));
+        }
+    }
+    
+    /**
      * Upload file e riassumi contenuto.
      * POST /api/summarize/upload
      */
@@ -83,21 +123,35 @@ public class SummarizerController {
     public ResponseEntity<?> summarizeFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "maxLength", defaultValue = "150") int maxLength,
-            @RequestParam(value = "minLength", defaultValue = "50") int minLength) {
+            @RequestParam(value = "minLength", defaultValue = "50") int minLength,
+            @RequestParam(value = "format", defaultValue = "paragraph") String format) {
         try {
-            // Leggi il contenuto del file
-            String text = new String(file.getBytes());
+            log.debug("Upload file - Nome: {}, Dimensione: {} bytes, maxLength: {}, minLength: {}", 
+                file.getOriginalFilename(), file.getSize(), maxLength, minLength);
             
-            SummarizationResponse response = summarizerService.summarizeText(
-                    text, maxLength, minLength
+            // Utilizza il nuovo metodo che gestisce PDF, DOCX e TXT
+            SummarizationResponse response = summarizerService.summarizeFile(
+                    file.getBytes(), 
+                    file.getOriginalFilename(),
+                    maxLength, 
+                    minLength,
+                    format
             );
             
             return ResponseEntity.ok(response);
             
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", e.getMessage()));
         } catch (IOException e) {
             return ResponseEntity
                     .badRequest()
                     .body(Map.of("error", "Errore nella lettura del file: " + e.getMessage()));
+        } catch (NlpServiceClient.NlpServiceException e) {
+            return ResponseEntity
+                    .status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "Servizio NLP non disponibile: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)

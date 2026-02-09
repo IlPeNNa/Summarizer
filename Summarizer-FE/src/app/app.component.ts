@@ -22,6 +22,7 @@ export class AppComponent {
   // Input data
   inputText: string = '';
   selectedFileName: string = '';
+  selectedFile: File | null = null;
   
   // Parametri lunghezza
   lengthPresets = [
@@ -44,6 +45,7 @@ export class AppComponent {
   errorMessage: string = '';
   showDownloadMenu: boolean = false;
   isDragOver: boolean = false;
+  isCopied: boolean = false;
   
   // Auth modal
   showAuthModal: boolean = false;
@@ -76,18 +78,68 @@ export class AppComponent {
     }
   }
 
+  onMinLengthChange(): void {
+    // Assicura che minLength non superi maxLength
+    if (this.minLength > this.maxLength) {
+      this.maxLength = this.minLength;
+    }
+  }
+
+  onMaxLengthChange(): void {
+    // Assicura che maxLength non sia inferiore a minLength
+    if (this.maxLength < this.minLength) {
+      this.minLength = this.maxLength;
+    }
+  }
+
   onFileSelect(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
 
+    this.selectedFile = file;
     this.selectedFileName = file.name;
-    const reader = new FileReader();
     
-    reader.onload = (e: any) => {
-      this.inputText = e.target.result;
-    };
+    // Valida il tipo di file
+    const validExtensions = ['.txt', '.pdf', '.docx'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
     
-    reader.readAsText(file);
+    if (!validExtensions.includes(fileExtension)) {
+      this.errorMessage = 'Formato file non supportato. Usa .txt, .pdf o .docx';
+      this.selectedFile = null;
+      this.selectedFileName = '';
+      setTimeout(() => this.errorMessage = '', 5000);
+      return;
+    }
+    
+    // Per i file TXT, mostra il contenuto nell'editor
+    if (fileExtension === '.txt') {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.inputText = e.target.result;
+        this.selectedFile = null; // Non serve più il file, usiamo il testo
+      };
+      reader.readAsText(file);
+    } else {
+      // Per PDF e DOCX, estrai il testo e mostralo
+      this.isLoading = true;
+      this.inputText = 'Estrazione testo in corso...';
+      
+      this.summarizerService.extractTextFromFile(file).subscribe({
+        next: (response) => {
+          this.inputText = response.text;
+          this.selectedFile = null; // Non serve più il file, usiamo il testo estratto
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.errorMessage = error.error?.error || 'Errore durante l\'estrazione del testo';
+          this.inputText = '';
+          this.selectedFile = null;
+          this.selectedFileName = '';
+          this.isLoading = false;
+          setTimeout(() => this.errorMessage = '', 5000);
+        }
+      });
+    }
   }
 
   onDragOver(event: DragEvent): void {
@@ -110,33 +162,74 @@ export class AppComponent {
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       const file = files[0];
+      this.selectedFile = file;
       this.selectedFileName = file.name;
-      const reader = new FileReader();
       
-      reader.onload = (e: any) => {
-        this.inputText = e.target.result;
-      };
+      // Valida il tipo di file
+      const validExtensions = ['.txt', '.pdf', '.docx'];
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
       
-      reader.readAsText(file);
+      if (!validExtensions.includes(fileExtension)) {
+        this.errorMessage = 'Formato file non supportato. Usa .txt, .pdf o .docx';
+        this.selectedFile = null;
+        this.selectedFileName = '';
+        setTimeout(() => this.errorMessage = '', 5000);
+        return;
+      }
+      
+      // Per i file TXT, mostra il contenuto nell'editor
+      if (fileExtension === '.txt') {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.inputText = e.target.result;
+          this.selectedFile = null; // Non serve più il file, usiamo il testo
+        };
+        reader.readAsText(file);
+      } else {
+        // Per PDF e DOCX, estrai il testo e mostralo
+        this.isLoading = true;
+        this.inputText = 'Estrazione testo in corso...';
+        
+        this.summarizerService.extractTextFromFile(file).subscribe({
+          next: (response) => {
+            this.inputText = response.text;
+            this.selectedFile = null; // Non serve più il file, usiamo il testo estratto
+            this.isLoading = false;
+          },
+          error: (error) => {
+            this.errorMessage = error.error?.error || 'Errore durante l\'estrazione del testo';
+            this.inputText = '';
+            this.selectedFile = null;
+            this.selectedFileName = '';
+            this.isLoading = false;
+            setTimeout(() => this.errorMessage = '', 5000);
+          }
+        });
+      }
     }
   }
 
   clearText(): void {
     this.inputText = '';
     this.selectedFileName = '';
+    this.selectedFile = null;
     this.errorMessage = '';
     this.summary = '';
   }
 
   summarize(): void {
-    if (!this.inputText) return;
+    // Validazione testo
+    if (!this.inputText) {
+      this.errorMessage = 'Inserisci del testo o carica un file';
+      return;
+    }
     
-    // Validazione lato client
     if (this.inputWordCount < 100) {
       this.errorMessage = 'Il testo è troppo corto per essere riassunto (minimo 100 parole)';
       return;
     }
     
+    // Validazione parametri lunghezza
     if (this.minLength < 10) {
       this.errorMessage = 'La lunghezza minima deve essere almeno 10 parole';
       return;
@@ -161,6 +254,7 @@ export class AppComponent {
     const minTokens = Math.round(this.minLength * tokenMultiplier);
     const maxTokens = Math.round(this.maxLength * tokenMultiplier);
     
+    // Usa sempre il testo nel textarea (che sia stato digitato o estratto da file)
     const request: SummarizationRequest = {
       input: this.inputText,
       minLength: minTokens,
@@ -193,6 +287,10 @@ export class AppComponent {
     if (!this.summary) return;
     navigator.clipboard.writeText(this.summary).then(() => {
       console.log('Riassunto copiato negli appunti');
+      this.isCopied = true;
+      setTimeout(() => {
+        this.isCopied = false;
+      }, 2000);
     });
   }
 

@@ -60,7 +60,7 @@
 
 /* Form Header */
 .form-header {
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #e2e8f0;
   background: #f7fafc;
 }
@@ -353,7 +353,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 0 1rem 0.75rem 1rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -434,26 +434,33 @@
   justify-content: center;
 }
 
-.action-icon-btn:hover {
+.download-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.action-icon-btn:hover:not(.feedback-icon:hover) {
   transform: scale(1.15);
 }
 
-.icon-emoji {
-  filter: grayscale(100%);
-}
-
-.action-icon-btn:hover .icon-emoji {
-  filter: grayscale(0%);
+.copy-icon,
+.feedback-icon,
+.download-icon {
+  width: 26px;
+  height: 26px;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Menu download */
 .download-menu {
   position: absolute;
-  bottom: 100%;
-  right: 10%;
+  top: 70%;
+  left: calc(100% + 3px);
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 0px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
@@ -462,11 +469,11 @@
 }
 
 .download-menu-item {
-  padding: 0.75rem 1.5rem;
+  padding: 0.55rem 1rem;
   background: white;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #2d3748;
   text-align: left;
   transition: all 0.2s;
@@ -480,54 +487,6 @@
 /* Rimuove i vecchi download buttons */
 .download-buttons {
   display: none;
-}
-
-.download-btn {
-  flex: 1;
-  padding: 0.6rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-  color: #2d3748;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.download-btn:hover {
-  background: #4299e1;
-  border-color: #4299e1;
-  color: white;
-  transform: translateY(-1px);
-}
-
-.download-icon {
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-/* Responsive */
-@media (max-width: 968px) {
-  .two-column-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .input-column {
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  
-  .navbar-content {
-    padding: 0 1rem;
-  }
-  
-  .main-container {
-    padding: 0 1rem;
-  }
 }
 
 /* Auth Modal */

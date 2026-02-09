@@ -175,6 +175,39 @@ public class SummarizerService {
         return nlpServiceClient.isHealthy();
     }
     
+    /**
+     * Estrae il testo da un file (supporta TXT, PDF, DOCX) senza riassumerlo.
+     * 
+     * @param fileContent Contenuto del file come array di byte
+     * @param filename Nome del file
+     * @return Testo estratto dal file
+     * @throws NlpServiceClient.NlpServiceException se il servizio NLP fallisce
+     */
+    public String extractTextFromFile(byte[] fileContent, String filename) 
+            throws NlpServiceClient.NlpServiceException {
+        validateFileType(filename);
+        return nlpServiceClient.extractTextFromFile(fileContent, filename);
+    }
+    
+    /**
+     * Riassume il contenuto di un file (supporta TXT, PDF, DOCX).
+     * 
+     * @param fileContent Contenuto del file come array di byte
+     * @param filename Nome del file
+     * @param maxLength Lunghezza massima del riassunto
+     * @param minLength Lunghezza minima del riassunto
+     * @param format Formato del riassunto (paragraph, bullet)
+     * @return Risposta con il riassunto
+     * @throws NlpServiceClient.NlpServiceException se il servizio NLP fallisce
+     */
+    public SummarizationResponse summarizeFile(byte[] fileContent, String filename, 
+                                                int maxLength, int minLength, String format) 
+            throws NlpServiceClient.NlpServiceException {
+        validateLengthParameters(maxLength, minLength);
+        validateFileType(filename);
+        return nlpServiceClient.summarizeFile(fileContent, filename, maxLength, minLength, format);
+    }
+    
     private void validateText(String text) {
         if (text == null || text.trim().isEmpty()) {
             throw new IllegalArgumentException("Il testo non può essere vuoto");
@@ -196,6 +229,19 @@ public class SummarizerService {
         
         if (maxLength > 500) {
             throw new IllegalArgumentException("maxLength non può superare 500");
+        }
+    }
+    
+    private void validateFileType(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("Nome file non valido");
+        }
+        
+        String lowerFilename = filename.toLowerCase();
+        if (!lowerFilename.endsWith(".txt") && 
+            !lowerFilename.endsWith(".pdf") && 
+            !lowerFilename.endsWith(".docx")) {
+            throw new IllegalArgumentException("Formato file non supportato. Usa .txt, .pdf o .docx");
         }
     }
 }

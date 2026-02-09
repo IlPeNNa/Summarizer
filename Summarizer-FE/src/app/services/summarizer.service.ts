@@ -21,13 +21,24 @@ export class SummarizerService {
   /**
    * Upload e riassumi un file
    */
-  uploadAndSummarize(file: File, minLength: number, maxLength: number): Observable<SummarizationResponse> {
+  uploadAndSummarize(file: File, minLength: number, maxLength: number, format: string = 'paragraph'): Observable<SummarizationResponse> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('minLength', minLength.toString());
     formData.append('maxLength', maxLength.toString());
+    formData.append('format', format);
     
     return this.http.post<SummarizationResponse>(`${this.apiUrl}/upload`, formData);
+  }
+
+  /**
+   * Estrai testo da un file senza riassumerlo
+   */
+  extractTextFromFile(file: File): Observable<{text: string, length: number, filename: string}> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return this.http.post<{text: string, length: number, filename: string}>(`${this.apiUrl}/extract`, formData);
   }
 
   /**

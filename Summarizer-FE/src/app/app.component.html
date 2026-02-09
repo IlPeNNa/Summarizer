@@ -65,7 +65,7 @@
         </div>
         
         <div class="form-footer">
-          <a href="#" class="forgot-link" (click)="handleForgotPassword($event)">Forgot Password?</a>
+          <a href="#" class="forgot-link" (click)="handleForgotPassword($event)">Password dimenticata?</a>
         </div>
         
         <button type="submit" class="login-btn">Login</button>
@@ -147,14 +147,13 @@
           class="preset-btn"
           [title]="preset.description">
           <span class="preset-label">{{ preset.label }}</span>
-          <span class="preset-description">{{ preset.description }}</span>
         </button>
       </div>
       <div class="slider-controls" *ngIf="selectedPreset === lengthPresets[2].value">
         <label>
           Lunghezza: {{ minLength }} - {{ maxLength }} parole<br>
-          MIN<input type="range" [(ngModel)]="minLength" min="30" max="200" />
-          MAX<input type="range" [(ngModel)]="maxLength" min="50" max="400" />
+          MIN<input type="range" [(ngModel)]="minLength" min="30" max="200" (ngModelChange)="onMinLengthChange()" />
+          MAX<input type="range" [(ngModel)]="maxLength" min="50" max="400" (ngModelChange)="onMaxLengthChange()" />
         </label>
       </div>
     </div>
@@ -237,20 +236,22 @@
             <!-- Action buttons in basso -->
             <div class="summary-actions">
               <button class="action-icon-btn" title="Lascia feedback">
-                <span class="icon-emoji">😊</span>
+                <span class="icon-emoji"><img src="/feedback.ico" alt="Feedback" class="feedback-icon"></span>
               </button>
-              <button (click)="copySummary()" class="action-icon-btn" title="Copia">
-                <span class="icon-copy">📋</span>
+              <button (click)="copySummary()" class="action-icon-btn" [title]="isCopied ? 'Copiato' : 'Copia'">
+                <span class="icon-copy"><img src="/copy.ico" alt="Copy" class="copy-icon"></span>
               </button>
-              <button (click)="toggleDownloadMenu()" class="action-icon-btn" title="Scarica">
-                <span class="icon-download"><img src="/download.ico" alt="Download" class="download-icon"></span>
-              </button>
-              
-              <!-- Menu download (solo se aperto) -->
-              <div *ngIf="showDownloadMenu" class="download-menu">
-                <button (click)="downloadTxt()" class="download-menu-item">TXT</button>
-                <button (click)="downloadDocx()" class="download-menu-item">DOCX</button>
-                <button (click)="downloadPdf()" class="download-menu-item">PDF</button>
+              <div class="download-wrapper">
+                <button (click)="toggleDownloadMenu()" class="action-icon-btn" title="Scarica">
+                  <span class="icon-download"><img src="/download.ico" alt="Download" class="download-icon"></span>
+                </button>
+                
+                <!-- Menu download (solo se aperto) -->
+                <div *ngIf="showDownloadMenu" class="download-menu">
+                  <button (click)="downloadTxt()" class="download-menu-item">.TXT</button>
+                  <button (click)="downloadDocx()" class="download-menu-item">.DOCX</button>
+                  <button (click)="downloadPdf()" class="download-menu-item">.PDF</button>
+                </div>
               </div>
             </div>
           </div>

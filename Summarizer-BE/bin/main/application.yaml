@@ -1,23 +1,29 @@
 spring:
   application:
     name: myapp
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
   
-  # Database configuration (currently disabled)
-  # Uncomment and configure when database is needed
-  # datasource:
-  #   url: jdbc:mysql://localhost:3306/summarizer
-  #   username: your_username
-  #   password: ${DB_PASSWORD:your_password}  # Use environment variable
-  #   driver-class-name: com.mysql.cj.jdbc.Driver
-  # jpa:
-  #   hibernate:
-  #     ddl-auto: update
-  #   show-sql: true
-  #   properties:
-  #     hibernate:
-  #       dialect: org.hibernate.dialect.MySQLDialect
+  # Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/summarizerdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: Tfovygv$185956
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update  # Cambia in 'validate' in produzione
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    open-in-view: false
   
   servlet:
     multipart:

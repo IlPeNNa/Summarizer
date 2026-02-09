@@ -48,4 +48,8 @@ Thumbs.db
 
 # Database locale
 **/*.db
+
+# Configurazioni con credenziali sensibili
+# ATTENZIONE: Non committare file con password!
+# Summarizer-BE/src/main/resources/application.yaml
 **/*.sqlite

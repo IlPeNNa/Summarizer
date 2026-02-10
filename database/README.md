@@ -43,52 +43,46 @@ SHOW TABLES;
 ```
 
 Dovresti vedere queste tabelle:
-- `users`
-- `summaries`
-- `summary_files`
-- `summary_tags`
-- `feedback`
+- `users` (Utenti)
+- `summaries` (Riassunti con testi completi)
+- `feedback` (Valutazioni)
 
 ---
 
 ## 📋 Struttura Database
 
-### **Tabella `users`**
-Gestisce gli utenti registrati
-- `id`: Chiave primaria
-- `email`: Email univoca (username)
-- `password_hash`: Password hashata (BCrypt)
-- `nome`, `cognome`: Dati utente
-- `created_at`, `last_login`: Timestamp
-- `is_active`: Account attivo/disattivato
+### **Tabella `users`** (Utenti)
+Gestisce gli utenti registrati - **MINIMALISTA**
+- `id`: Chiave primaria (INT, AUTO_INCREMENT)
+- `email`: Email univoca - usata come username (VARCHAR 255, UNIQUE, NOT NULL)
+- `password`: Password hashata con BCrypt (VARCHAR 255, NOT NULL)
 
-### **Tabella `summaries`**
-Memorizza tutti i riassunti generati
-- `id`: Chiave primaria
-- `user_id`: Riferimento all'utente
-- `title`: Titolo del riassunto
-- `original_text`, `summary_text`: Testi originale e riassunto
-- `word_count`: Conteggio parole
-- `format`: Formato (paragraph/bullet)
-- `is_favorite`: Flag preferito
+### **Tabella `summaries`** (Riassunti)
+Memorizza tutti i riassunti generati con i testi completi
+- `id`: Chiave primaria (INT, AUTO_INCREMENT)
+- `user_id`: Riferimento all'utente (INT, FOREIGN KEY)
+- `original_text`: Testo originale completo (**MEDIUMTEXT** - fino a ~2-3 milioni parole)
+- `summary_text`: Riassunto generato (**MEDIUMTEXT**)
+- `original_length`: Lunghezza caratteri testo originale (INT)
+- `summary_length`: Lunghezza caratteri riassunto (INT)
+- `word_count`: Numero di parole del riassunto (INT)
+- `created_at`: Timestamp creazione (TIMESTAMP, DEFAULT NOW)
 
-### **Tabella `summary_files`**
-Traccia i file originali caricati
-- `summary_id`: Riferimento al riassunto
-- `original_filename`: Nome file originale
-- `file_type`: Tipo (txt/pdf/docx)
-- `file_size`: Dimensione in bytes
+**Perché MEDIUMTEXT?**
+- Supporta documenti fino a 16MB (~2-3 milioni parole)
+- Un PDF di 100 pagine = ~50,000 parole = ~300KB ✅ Nessun problema
+- Un documento di 4000 parole = ~25KB ✅ Ampiamente supportato
 
-### **Tabella `summary_tags`** (Opzionale)
-Tag/categorie per organizzare i riassunti
-- `summary_id`: Riferimento al riassunto
-- `tag_name`: Nome del tag
+### **Tabella `feedback`** (Feedback Utenti)
+Feedback e valutazioni sui riassunti
+- `id`: Chiave primaria (INT, AUTO_INCREMENT)
+- `summary_id`: Riferimento al riassunto (INT, FOREIGN KEY)
+- `user_id`: Riferimento all'utente (INT, FOREIGN KEY)
+- `rating`: Valutazione da 1 a 5 stelle (INT, CHECK 1-5)
+- `comment`: Commento opzionale (TEXT, NULL)
+- `created_at`: Timestamp feedback (TIMESTAMP, DEFAULT NOW)
 
-### **Tabella `feedback`** (Opzionale)
-Feedback e valutazioni utenti
-- `summary_id`, `user_id`: Riferimenti
-- `rating`: Valutazione 1-5 stelle
-- `comment`: Commento testuale
+**Vincolo**: Un utente può lasciare un solo feedback per riassunto (UNIQUE KEY)
 
 ---
 

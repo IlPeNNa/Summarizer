@@ -2,10 +2,16 @@ package it.unife.sample.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO per la risposta. Accetta snake_case da Python e invia camelCase al frontend.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SummarizationResponse {
     
     @JsonProperty("summary")
@@ -19,36 +25,10 @@ public class SummarizationResponse {
     @JsonAlias("summary_length")
     private Integer summaryLength;
     
-    public SummarizationResponse() {
-    }
+    @JsonProperty("wordCount")
+    @JsonAlias("word_count")
+    private Integer wordCount;
     
-    public SummarizationResponse(String summary, Integer originalLength, Integer summaryLength) {
-        this.summary = summary;
-        this.originalLength = originalLength;
-        this.summaryLength = summaryLength;
-    }
-    
-    public String getSummary() {
-        return summary;
-    }
-    
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-    
-    public Integer getOriginalLength() {
-        return originalLength;
-    }
-    
-    public void setOriginalLength(Integer originalLength) {
-        this.originalLength = originalLength;
-    }
-    
-    public Integer getSummaryLength() {
-        return summaryLength;
-    }
-    
-    public void setSummaryLength(Integer summaryLength) {
-        this.summaryLength = summaryLength;
-    }
+    @JsonProperty("summaryId")
+    private Integer summaryId;
 }

@@ -20,6 +20,11 @@ Write-Host "Fermando NLP Service..." -ForegroundColor Yellow
 Get-Process -Name "python" -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like "*main.py*"} | Stop-Process -Force
 Write-Host "NLP Service fermato" -ForegroundColor Green
 
+# Ferma Database MySQL (Docker)
+Write-Host "Fermando Database MySQL..." -ForegroundColor Yellow
+docker-compose -f Summarizer-BE/docker-compose.yaml down
+Write-Host "Database MySQL fermato" -ForegroundColor Green
+
 Write-Host ""
 Write-Host "Tutti i servizi sono stati fermati!" -ForegroundColor Green
 Write-Host ""

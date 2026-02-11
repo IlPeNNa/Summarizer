@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SummarizerService } from './services/summarizer.service';
-import { SummarizationRequest, SummaryLengthPreset } from './models/summarization.model';
+import { AuthService } from './services/auth.service';
+import { SummarizationRequest, SummaryLengthPreset, SummaryItem } from './models/summarization.model';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,7 @@ import { SummarizationRequest, SummaryLengthPreset } from './models/summarizatio
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Summarizer';
   
   // Input data
@@ -39,6 +40,7 @@ export class AppComponent {
   summary: string = '';
   originalLength: number = 0;
   summaryLength: number = 0;
+  lastSummaryId: number | null = null;
   
   // Stati
   isLoading: boolean = false;
@@ -47,7 +49,9 @@ export class AppComponent {
   isDragOver: boolean = false;
   isCopied: boolean = false;
   
-  // Auth modal
+  // Auth
+  isAuthenticated: boolean = false;
+  currentUserEmail: string | null = null;
   showAuthModal: boolean = false;
   showRegisterForm: boolean = false;
   showPassword: boolean = false;
@@ -56,8 +60,43 @@ export class AppComponent {
   registerEmail: string = '';
   registerPassword: string = '';
   registerConfirmPassword: string = '';
+  authError: string = '';
+  
+  // Riassunti utente
+  showSummariesSidebar: boolean = false;
+  userSummaries: SummaryItem[] = [];
+  totalSummariesCount: number = 0;
+  
+  // Feedback
+  showFeedbackModal: boolean = false;
+  feedbackRating: number = 0;
+  feedbackComment: string = '';
+  feedbackError: string = '';
+  
+  // Change Password
+  showChangePasswordModal: boolean = false;
+  changePasswordEmail: string = '';
+  changePasswordNew: string = '';
+  changePasswordConfirm: string = '';
+  changePasswordError: string = '';
 
-  constructor(private summarizerService: SummarizerService) {}
+  constructor(
+    private summarizerService: SummarizerService,
+    private authService: AuthService
+  ) {}
+  
+  ngOnInit(): void {
+    // Controlla se l'utente è autenticato
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
+      this.currentUserEmail = isAuth ? this.authService.getUserEmail() : null;
+      
+      // Se l'utente si è appena autenticato, carica i suoi riassunti
+      if (isAuth) {
+        this.loadUserSummaries();
+      }
+    });
+  }
   
   selectPreset(preset: SummaryLengthPreset): void {
     this.selectedPreset = preset;
@@ -267,6 +306,7 @@ export class AppComponent {
         this.summary = response.summary;
         this.originalLength = response.originalLength;
         this.summaryLength = response.summaryLength;
+        this.lastSummaryId = response.summaryId || null;
         this.isLoading = false;
       },
       error: (error) => {
@@ -388,25 +428,257 @@ export class AppComponent {
   
   handleLogin(event: Event): void {
     event.preventDefault();
-    console.log('Login attempt:', this.loginEmail);
-    // TODO: Implementare la logica di login
-    alert('Login feature coming soon!');
+    this.authError = '';
+    
+    if (!this.loginEmail || !this.loginPassword) {
+      this.authError = 'Inserisci email e password';
+      return;
+    }
+    
+    this.isLoading = true;
+    this.authService.login(this.loginEmail, this.loginPassword).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.showAuthModal = false;
+        this.resetAuthForms();
+        this.loadUserSummaries();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.authError = 'Email o password non corretti';
+      }
+    });
   }
   
   handleRegister(event: Event): void {
     event.preventDefault();
-    if (this.registerPassword !== this.registerConfirmPassword) {
-      alert('Passwords do not match!');
+    this.authError = '';
+    
+    if (!this.registerEmail || !this.registerPassword || !this.registerConfirmPassword) {
+      this.authError = 'Compila tutti i campi';
       return;
     }
-    console.log('Register attempt:', this.registerEmail);
-    // TODO: Implementare la logica di registrazione
-    alert('Registration feature coming soon!');
+    
+    if (this.registerPassword !== this.registerConfirmPassword) {
+      this.authError = 'Le password non corrispondono';
+      return;
+    }
+    
+    if (this.registerPassword.length < 6) {
+      this.authError = 'La password deve essere almeno 6 caratteri';
+      return;
+    }
+    
+    this.isLoading = true;
+    this.authService.register(this.registerEmail, this.registerPassword).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.showAuthModal = false;
+        this.resetAuthForms();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.authError = error.error?.error || 'Errore durante la registrazione. Email già esistente?';
+      }
+    });
   }
   
   handleForgotPassword(event: Event): void {
     event.preventDefault();
-    // TODO: Implementare il recupero password
-    alert('Password recovery feature coming soon!');
+    this.closeAuthModal();
+    this.openChangePasswordModal();
+  }
+  
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.userSummaries = [];
+        this.showSummariesSidebar = false;
+      },
+      error: () => {
+        // Anche se il server fallisce, rimuovi il token localmente
+        this.authService.logoutLocal();
+        this.userSummaries = [];
+        this.showSummariesSidebar = false;
+      }
+    });
+  }
+  
+  openAuthModal(): void {
+    this.showAuthModal = true;
+    this.authError = '';
+  }
+  
+  toggleSummariesSidebar(): void {
+    if (!this.isAuthenticated) {
+      this.openAuthModal();
+      return;
+    }
+    
+    this.showSummariesSidebar = !this.showSummariesSidebar;
+    
+    if (this.showSummariesSidebar) {
+      this.loadUserSummaries();
+    }
+  }
+  
+  loadUserSummaries(): void {
+    this.summarizerService.getMySummaries(10).subscribe({
+      next: (response) => {
+        this.userSummaries = response.summaries;
+        this.totalSummariesCount = response.totalCount;
+      },
+      error: (error) => {
+        console.error('Errore caricamento riassunti:', error);
+      }
+    });
+  }
+  
+  loadSummary(summary: SummaryItem): void {
+    this.summary = summary.summaryText;
+    this.summaryLength = summary.summaryLength;
+    this.showSummariesSidebar = false;
+    this.lastSummaryId = summary.id;
+  }
+  
+  deleteSummaryItem(id: number, event: Event): void {
+    event.stopPropagation();
+    
+    if (!confirm('Vuoi eliminare questo riassunto?')) {
+      return;
+    }
+    
+    this.summarizerService.deleteSummary(id).subscribe({
+      next: () => {
+        this.loadUserSummaries();
+      },
+      error: (error) => {
+        console.error('Errore eliminazione riassunto:', error);
+      }
+    });
+  }
+  
+  openFeedbackModal(): void {
+    if (!this.isAuthenticated) {
+      this.openAuthModal();
+      return;
+    }
+    
+    if (!this.summary) {
+      alert('Genera prima un riassunto per lasciare un feedback');
+      return;
+    }
+    
+    this.showFeedbackModal = true;
+    this.feedbackRating = 0;
+    this.feedbackComment = '';
+    this.feedbackError = '';
+  }
+  
+  setRating(rating: number): void {
+    this.feedbackRating = rating;
+  }
+  
+  closeFeedbackModal(): void {
+    this.showFeedbackModal = false;
+    this.feedbackRating = 0;
+    this.feedbackComment = '';
+    this.feedbackError = '';
+  }
+  
+  submitFeedback(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+    
+    if (this.feedbackRating === 0) {
+      this.feedbackError = 'Seleziona una valutazione (stelle)';
+      return;
+    }
+    
+    // Se non abbiamo lastSummaryId, significa che il riassunto non è stato salvato
+    // (utente non loggato quando ha generato il riassunto)
+    if (!this.lastSummaryId) {
+      this.feedbackError = 'Questo riassunto non è salvato. Genera un nuovo riassunto dopo aver effettuato il login.';
+      return;
+    }
+    
+    this.isLoading = true;
+    this.feedbackError = '';
+    
+    this.summarizerService.submitFeedback({
+      summaryId: this.lastSummaryId,
+      rating: this.feedbackRating,
+      comment: this.feedbackComment || undefined
+    }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showFeedbackModal = false;
+        alert('Grazie per il tuo feedback!');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.feedbackError = error.error?.error || 'Errore durante l\'invio del feedback';
+      }
+    });
+  }
+  
+  openChangePasswordModal(): void {
+    this.showChangePasswordModal = true;
+    // Se l'utente è loggato, precompila l'email, altrimenti lasciala vuota
+    this.changePasswordEmail = this.isAuthenticated ? (this.currentUserEmail || '') : '';
+    this.changePasswordNew = '';
+    this.changePasswordConfirm = '';
+    this.changePasswordError = '';
+  }
+  
+  closeChangePasswordModal(): void {
+    this.showChangePasswordModal = false;
+    this.changePasswordEmail = '';
+    this.changePasswordNew = '';
+    this.changePasswordConfirm = '';
+    this.changePasswordError = '';
+  }
+  
+  handleChangePassword(event: Event): void {
+    event.preventDefault();
+    
+    // Validazione
+    if (!this.changePasswordEmail || !this.changePasswordNew || !this.changePasswordConfirm) {
+      this.changePasswordError = 'Compila tutti i campi';
+      return;
+    }
+    
+    if (this.changePasswordNew !== this.changePasswordConfirm) {
+      this.changePasswordError = 'Le password non corrispondono';
+      return;
+    }
+    
+    if (this.changePasswordNew.length < 6) {
+      this.changePasswordError = 'La password deve essere di almeno 6 caratteri';
+      return;
+    }
+    
+    this.isLoading = true;
+    this.changePasswordError = '';
+    
+    this.authService.resetPassword(this.changePasswordEmail, this.changePasswordNew).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.closeChangePasswordModal();
+        alert('Password reimpostata con successo! Puoi ora effettuare il login.');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        // Il backend restituisce testo semplice
+        if (typeof error.error === 'string') {
+          this.changePasswordError = error.error;
+        } else if (error.message) {
+          this.changePasswordError = error.message;
+        } else {
+          this.changePasswordError = 'Errore durante il cambio password';
+        }
+      }
+    });
   }
 }

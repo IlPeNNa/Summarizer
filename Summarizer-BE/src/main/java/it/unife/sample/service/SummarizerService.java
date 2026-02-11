@@ -2,6 +2,12 @@ package it.unife.sample.service;
 
 import it.unife.sample.client.NlpServiceClient;
 import it.unife.sample.dto.SummarizationResponse;
+import it.unife.sample.dto.SummaryResponse;
+import it.unife.sample.entity.Summary;
+import it.unife.sample.entity.User;
+import it.unife.sample.repository.SummaryRepository;
+import it.unife.sample.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -10,23 +16,26 @@ import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service layer per la logica di business della summarization.
  * Utilizza il NlpServiceClient per comunicare con il servizio Python.
  */
 @Service
+@RequiredArgsConstructor
 public class SummarizerService {
     
     private final NlpServiceClient nlpServiceClient;
-    
-    public SummarizerService(NlpServiceClient nlpServiceClient) {
-        this.nlpServiceClient = nlpServiceClient;
-    }
+    private final SummaryRepository summaryRepository;
+    private final UserRepository userRepository;
     
     /**
      * Riassume un testo utilizzando il servizio NLP.
@@ -243,5 +252,94 @@ public class SummarizerService {
             !lowerFilename.endsWith(".docx")) {
             throw new IllegalArgumentException("Formato file non supportato. Usa .txt, .pdf o .docx");
         }
+    }
+    
+    /**
+     * Salva un riassunto nel database per un utente autenticato.
+     * 
+     * @param userEmail Email dell'utente
+     * @param originalText Testo originale
+     * @param summaryText Testo riassunto
+     * @param wordCount Numero di parole del riassunto
+     * @return Summary entity salvata
+     */
+    @Transactional
+    public Summary saveSummary(String userEmail, String originalText, String summaryText, int wordCount) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        
+        Summary summary = new Summary();
+        summary.setUser(user);
+        summary.setOriginalText(originalText);
+        summary.setSummaryText(summaryText);
+        summary.setOriginalLength(originalText.length());
+        summary.setSummaryLength(summaryText.length());
+        summary.setWordCount(wordCount);
+        
+        return summaryRepository.save(summary);
+    }
+    
+    /**
+     * Recupera gli ultimi N riassunti NON eliminati di un utente.
+     * 
+     * @param userEmail Email dell'utente
+     * @param limit Numero massimo di riassunti da recuperare
+     * @return Lista di riassunti
+     */
+    public List<SummaryResponse> getUserSummaries(String userEmail, int limit) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        
+        List<Summary> summaries = summaryRepository.findTopActiveByUserId(
+                user.getId(), 
+                PageRequest.of(0, limit)
+        );
+        
+        return summaries.stream()
+                .map(this::toSummaryResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Conta i riassunti NON eliminati di un utente.
+     * 
+     * @param userEmail Email dell'utente
+     * @return Numero di riassunti attivi
+     */
+    public long countUserSummaries(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        
+        return summaryRepository.countActiveByUserId(user.getId());
+    }
+    
+    /**
+     * Soft delete di un riassunto.
+     * 
+     * @param summaryId ID del riassunto
+     * @param userEmail Email dell'utente (per verifica proprietà)
+     */
+    @Transactional
+    public void deleteSummary(Integer summaryId, String userEmail) {
+        Summary summary = summaryRepository.findById(summaryId)
+                .orElseThrow(() -> new RuntimeException("Riassunto non trovato"));
+        
+        if (!summary.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Non autorizzato a eliminare questo riassunto");
+        }
+        
+        summary.setDeletedAt(java.time.LocalDateTime.now());
+        summaryRepository.save(summary);
+    }
+    
+    private SummaryResponse toSummaryResponse(Summary summary) {
+        return new SummaryResponse(
+                summary.getId(),
+                summary.getSummaryText(),
+                summary.getWordCount(),
+                summary.getOriginalLength(),
+                summary.getSummaryLength(),
+                summary.getCreatedAt()
+        );
     }
 }

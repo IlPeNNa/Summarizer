@@ -1,13 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { SummarizationRequest, SummarizationResponse, DownloadRequest } from '../models/summarization.model';
+import { 
+  SummarizationRequest, 
+  SummarizationResponse, 
+  DownloadRequest,
+  MySummariesResponse,
+  FeedbackRequest,
+  FeedbackResponse
+} from '../models/summarization.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SummarizerService {
   private readonly apiUrl = 'http://localhost:8080/api/summarize';
+  private readonly feedbackUrl = 'http://localhost:8080/api/feedback';
 
   constructor(private http: HttpClient) {}
 
@@ -88,5 +96,40 @@ export class SummarizerService {
     a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Recupera gli ultimi riassunti dell'utente autenticato
+   */
+  getMySummaries(limit: number = 10): Observable<MySummariesResponse> {
+    return this.http.get<MySummariesResponse>(`${this.apiUrl}/my-summaries?limit=${limit}`);
+  }
+
+  /**
+   * Elimina un riassunto (soft delete)
+   */
+  deleteSummary(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Invia feedback per un riassunto
+   */
+  submitFeedback(request: FeedbackRequest): Observable<FeedbackResponse> {
+    return this.http.post<FeedbackResponse>(this.feedbackUrl, request);
+  }
+
+  /**
+   * Elimina un feedback
+   */
+  deleteFeedback(id: number): Observable<any> {
+    return this.http.delete(`${this.feedbackUrl}/${id}`);
+  }
+
+  /**
+   * Ottieni rating medio di un riassunto
+   */
+  getAverageRating(summaryId: number): Observable<{averageRating: number}> {
+    return this.http.get<{averageRating: number}>(`${this.feedbackUrl}/average/${summaryId}`);
   }
 }

@@ -29,6 +29,7 @@ class SummarizationResponse(BaseModel):
     summary: str
     original_length: int
     summary_length: int
+    word_count: int
 
 
 @app.get("/")
@@ -79,10 +80,14 @@ async def summarize_text(request: SummarizationRequest):
         if request.format == "bullet":
             final_summary = summarizer.format_as_bullets(final_summary)
         
+        # 8. Calcola il numero di parole
+        word_count = len(final_summary.split())
+        
         return SummarizationResponse(
             summary=final_summary,
             original_length=len(request.input),
-            summary_length=len(final_summary)
+            summary_length=len(final_summary),
+            word_count=word_count
         )
     
     except Exception as e:
@@ -202,10 +207,14 @@ async def summarize_file(
         if format == "bullet":
             final_summary = summarizer.format_as_bullets(final_summary)
         
+        # 8. Calcola il numero di parole
+        word_count = len(final_summary.split())
+        
         return SummarizationResponse(
             summary=final_summary,
             original_length=len(text),
-            summary_length=len(final_summary)
+            summary_length=len(final_summary),
+            word_count=word_count
         )
     
     except HTTPException:

@@ -4,7 +4,7 @@ services:
     container_name: mysql_myapp
     environment:
       MYSQL_ROOT_PASSWORD: Tfovygv$185956
-      MYSQL_DATABASE: summarizer
+      MYSQL_DATABASE: summarizerdb
     ports:
       - "3306:3306"
     volumes:

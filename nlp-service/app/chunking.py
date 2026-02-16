@@ -1,5 +1,6 @@
 """
-Gestione dello chunking del testo per rispettare il limite di token di BART (~1024).
+Gestione dello chunking del testo per rispettare i limiti di token dei modelli.
+IT5: 512 token max | BART: 1024 token max
 """
 from typing import List
 import re
@@ -7,16 +8,16 @@ import re
 
 def chunk_text(
     text: str, 
-    max_tokens: int = 1024,
+    max_tokens: int = 512,
     overlap: int = 100,
     preserve_sentences: bool = True
 ) -> List[str]:
     """
-    Divide il testo in chunk gestibili dal modello mBART.
+    Divide il testo in chunk gestibili dai modelli di summarization.
     
     Args:
         text: Testo da dividere
-        max_tokens: Numero massimo di token per chunk (1024 per mBART)
+        max_tokens: Numero massimo di token per chunk (512 per IT5, 1024 per BART)
         overlap: Numero di token di sovrapposizione tra chunk (per mantenere contesto)
         preserve_sentences: Se True, cerca di non spezzare le frasi
         

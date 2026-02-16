@@ -54,15 +54,18 @@ async def summarize_text(request: SummarizationRequest):
         # 2. Rileva la lingua UNA VOLTA prima del chunking
         detected_language = summarizer._detect_language(cleaned_text)
         
-        # 3. Chunking del testo (gestisce il limite di 1024 token)
-        chunks = chunk_text(cleaned_text)
+        # 3. Ottieni il limite di token per il modello della lingua rilevata
+        max_tokens = summarizer.get_max_input_length(detected_language)
+        
+        # 4. Chunking del testo con il limite appropriato (512 per IT5, 1024 per BART)
+        chunks = chunk_text(cleaned_text, max_tokens=max_tokens)
         num_chunks = len(chunks)
         
-        # 4. Distribuisci i limiti tra i chunk per rispettare max/min totali
+        # 5. Distribuisci i limiti tra i chunk per rispettare max/min totali
         chunk_max_length = max(30, request.maxLength // num_chunks)
         chunk_min_length = max(10, request.minLength // num_chunks)
         
-        # 5. Riassunto di ogni chunk usando la lingua già rilevata
+        # 6. Riassunto di ogni chunk usando la lingua già rilevata
         summaries = []
         for chunk in chunks:
             summary = summarizer.summarize(
@@ -73,14 +76,14 @@ async def summarize_text(request: SummarizationRequest):
             )
             summaries.append(summary)
         
-        # 6. Combina i riassunti
+        # 7. Combina i riassunti
         final_summary = " ".join(summaries)
         
-        # 7. Formatta l'output se richiesto
+        # 8. Formatta l'output se richiesto
         if request.format == "bullet":
             final_summary = summarizer.format_as_bullets(final_summary)
         
-        # 8. Calcola il numero di parole
+        # 9. Calcola il numero di parole
         word_count = len(final_summary.split())
         
         return SummarizationResponse(
@@ -181,15 +184,18 @@ async def summarize_file(
         # 2. Rileva la lingua
         detected_language = summarizer._detect_language(cleaned_text)
         
-        # 3. Chunking del testo
-        chunks = chunk_text(cleaned_text)
+        # 3. Ottieni il limite di token per il modello della lingua rilevata
+        max_tokens = summarizer.get_max_input_length(detected_language)
+        
+        # 4. Chunking del testo con il limite appropriato (512 per IT5, 1024 per BART)
+        chunks = chunk_text(cleaned_text, max_tokens=max_tokens)
         num_chunks = len(chunks)
         
-        # 4. Distribuisci i limiti tra i chunk
+        # 5. Distribuisci i limiti tra i chunk
         chunk_max_length = max(30, maxLength // num_chunks)
         chunk_min_length = max(10, minLength // num_chunks)
         
-        # 5. Riassunto di ogni chunk
+        # 6. Riassunto di ogni chunk
         summaries = []
         for chunk in chunks:
             summary = summarizer.summarize(
@@ -200,14 +206,14 @@ async def summarize_file(
             )
             summaries.append(summary)
         
-        # 6. Combina i riassunti
+        # 7. Combina i riassunti
         final_summary = " ".join(summaries)
         
-        # 7. Formatta l'output se richiesto
+        # 8. Formatta l'output se richiesto
         if format == "bullet":
             final_summary = summarizer.format_as_bullets(final_summary)
         
-        # 8. Calcola il numero di parole
+        # 9. Calcola il numero di parole
         word_count = len(final_summary.split())
         
         return SummarizationResponse(

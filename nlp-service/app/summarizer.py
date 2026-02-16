@@ -39,8 +39,9 @@ class Summarizer:
         self.english_model = None
         self.english_tokenizer = None
         
-        # Limite di token
-        self.max_input_length = 512
+        # Limiti di token per modello
+        self.italian_max_input_length = 512   # IT5 max input
+        self.english_max_input_length = 1024  # BART max input
         
         print("✓ Summarizer inizializzato (modelli caricabili al bisogno)")
     
@@ -219,30 +220,33 @@ class Summarizer:
         if language is None:
             language = self._detect_language(text)
         
-        # 2. Seleziona il modello appropriato
+        # 2. Seleziona il modello appropriato e il suo limite di token
         if language == 'it':
             # Usa modello italiano
             self._load_italian_model()
             model = self.italian_model
             tokenizer = self.italian_tokenizer
-            print("Uso modello italiano (it5)")
+            max_input_length = self.italian_max_input_length
+            print("Uso modello italiano (it5) - max 512 token")
         elif language == 'en':
             # Usa modello inglese
             self._load_english_model()
             model = self.english_model
             tokenizer = self.english_tokenizer
-            print("Uso modello inglese (BART-CNN)")
+            max_input_length = self.english_max_input_length
+            print("Uso modello inglese (BART-CNN) - max 1024 token")
         else:
             # Per altre lingue, usa il modello italiano come fallback
             print(f"Lingua {language} non supportata, uso modello italiano come fallback")
             self._load_italian_model()
             model = self.italian_model
             tokenizer = self.italian_tokenizer
+            max_input_length = self.italian_max_input_length
         
-        # 3. Tokenizza l'input
+        # 3. Tokenizza l'input con il limite corretto per il modello
         inputs = tokenizer(
             text,
-            max_length=self.max_input_length,
+            max_length=max_input_length,
             truncation=True,
             return_tensors="pt",
             padding=True
@@ -272,11 +276,31 @@ class Summarizer:
         return summary
     
     
-    def get_token_count(self, text: str) -> int:
+    def get_token_count(self, text: str, language: str = 'it') -> int:
         """
         Restituisce il numero di token nel testo.
-        Usa il tokenizer italiano per default.
+        
+        Args:
+            text: Testo da contare
+            language: Lingua del testo ('it' o 'en')
         """
-        self._load_italian_model()
-        tokens = self.italian_tokenizer.encode(text)
+        if language == 'en':
+            self._load_english_model()
+            tokens = self.english_tokenizer.encode(text)
+        else:
+            self._load_italian_model()
+            tokens = self.italian_tokenizer.encode(text)
         return len(tokens)
+    
+    
+    def get_max_input_length(self, language: str = 'it') -> int:
+        """
+        Restituisce il limite massimo di token per il modello della lingua specificata.
+        
+        Args:
+            language: Lingua del modello ('it' o 'en')
+            
+        Returns:
+            Numero massimo di token (512 per IT5, 1024 per BART)
+        """
+        return self.english_max_input_length if language == 'en' else self.italian_max_input_length

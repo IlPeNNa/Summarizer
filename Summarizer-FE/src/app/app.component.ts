@@ -263,8 +263,8 @@ export class AppComponent implements OnInit {
       return;
     }
     
-    if (this.inputWordCount < 100) {
-      this.errorMessage = 'Il testo è troppo corto per essere riassunto (minimo 100 parole)';
+    if (this.inputWordCount < 50) {
+      this.errorMessage = 'Il testo è troppo corto per essere riassunto (minimo 50 parole)';
       return;
     }
     
@@ -274,8 +274,8 @@ export class AppComponent implements OnInit {
       return;
     }
     
-    if (this.maxLength > 500) {
-      this.errorMessage = 'La lunghezza massima non può superare 500 parole';
+    if (this.maxLength > 600) {
+      this.errorMessage = 'La lunghezza massima non può superare 600 parole';
       return;
     }
     

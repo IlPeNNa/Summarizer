@@ -111,7 +111,36 @@ class Summarizer:
             pattern = r'\b' + re.escape(noun.lower()) + r'\b'
             summary = re.sub(pattern, noun, summary, flags=re.IGNORECASE)
         
-        # 7. Aggiungi punto finale se manca
+        # 7. Correggi perdita della prima lettera (artefatto tokenizer IT5/SentencePiece)
+        # IT5 usa SentencePiece: dopo un apostrofo, la prima lettera maiuscola viene spesso
+        # persa durante la generazione. Es: "dell'talia" invece di "dell'Italia".
+        # Raccoglie TUTTE le parole con iniziale maiuscola dal testo originale
+        all_capitalized = set(re.findall(r'\b([A-Z][a-z]+)\b', original_text))
+        
+        # 7a. Ripristina prima lettera persa dopo apostrofo
+        # Es: "dell'talia" → "dell'Italia", "dell'mpero" → "dell'Impero"
+        # Solo se la parola completa (con la prima lettera mancante) esiste nel testo originale
+        def restore_after_apostrophe(match):
+            word = match.group(1)
+            for cap_word in all_capitalized:
+                if len(cap_word) == len(word) + 1 and cap_word[1:].lower() == word.lower():
+                    return "'" + cap_word
+            return "'" + word  # lascia invariato se non trovato nel testo originale
+        
+        summary = re.sub(r"'([a-zA-Z][a-zA-Z]+)", restore_after_apostrophe, summary)
+        
+        # 7b. Ripristina prima lettera persa in parole già capitalizzate
+        # Es: "Oma" → "Roma", "Ondata" → "Fondata"
+        def restore_missing_first_letter(match):
+            word = match.group(0)
+            for cap_word in all_capitalized:
+                if len(cap_word) == len(word) + 1 and cap_word[1:].lower() == word.lower():
+                    return cap_word
+            return word
+        
+        summary = re.sub(r'\b[A-Z][a-z]+\b', restore_missing_first_letter, summary)
+        
+        # 8. Aggiungi punto finale se manca
         if summary and summary[-1] not in '.!?':
             summary += '.'
         

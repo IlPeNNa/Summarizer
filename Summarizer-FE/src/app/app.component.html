@@ -360,7 +360,7 @@
         <label>
           Lunghezza: {{ minLength }} - {{ maxLength }} parole<br>
           MIN<input type="range" [(ngModel)]="minLength" min="30" max="200" (ngModelChange)="onMinLengthChange()" />
-          MAX<input type="range" [(ngModel)]="maxLength" min="50" max="400" (ngModelChange)="onMaxLengthChange()" />
+          MAX<input type="range" [(ngModel)]="maxLength" min="50" max="500" (ngModelChange)="onMaxLengthChange()" />
         </label>
       </div>
     </div>
@@ -370,8 +370,8 @@
       <!-- Colonna sinistra: Input -->
       <div class="input-column">
         <div class="input-section">
-          <div class="char-counter" [class.valid]="inputWordCount >= 100">
-            {{ inputWordCount }} / 100 parole minime
+          <div class="char-counter" [class.valid]="inputWordCount >= 50">
+            {{ inputWordCount }} / 50 parole minime
           </div>
           <textarea 
             [(ngModel)]="inputText"
